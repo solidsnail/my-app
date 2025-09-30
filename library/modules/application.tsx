@@ -1,3 +1,5 @@
+// library/modules/application.tsx
+
 import { Hono } from "hono";
 import { statSync, readdirSync } from "fs";
 import { join } from "path";
@@ -18,31 +20,40 @@ function getAllTsxFiles(dir: string, fileList: string[] = []): string[] {
 
 const getPagesUrls = () => {
   const pagesDir = join(process.cwd(), "src", "pages");
-  const tsxFiles = getAllTsxFiles(pagesDir);
-  return tsxFiles;
+  try {
+    const tsxFiles = getAllTsxFiles(pagesDir);
+    return tsxFiles;
+  } catch (error) {
+    console.warn("Pages directory not found, skipping page registration");
+    return [];
+  }
 };
 
-type ApplicationOptionsType = {};
+type ApplicationOptionsType = {
+  behaviors?: Record<string, any>;
+};
+
 export const createApplication = (options: ApplicationOptionsType) => {
   const app = new Hono();
+
+  // Make behaviors available globally if needed
+  if (options.behaviors) {
+    (globalThis as any).__behaviors = options.behaviors;
+  }
+
   app.use(async (c, next) => {
     await next();
-    console.log(c.res.status, c.req.url);
-    switch (c.res.status) {
-      case 200:
-        {
-        }
-        break;
-
-      case 404:
-        break;
-      default:
-        break;
-    }
+    const status = c.res.status;
+    console.log(
+      `[${new Date().toISOString()}] ${status} ${c.req.method} ${c.req.url}`
+    );
   });
+
+  // Auto-register pages
   const pagesUrls = getPagesUrls();
   for (const pageUrl of pagesUrls) {
     import(pageUrl);
   }
+
   return app;
 };

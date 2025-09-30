@@ -1,22 +1,26 @@
-import { html } from "hono/html";
+// src/components/counter.tsx
+
 import { createComponent } from "../../library/modules/component";
+import { UI } from "../../library/ui";
+import behaviors from "../behaviors";
 
 export default createComponent<{ name: string }>({
   name: "Counter",
   render({ name }) {
-    let count = 0;
+    const counter = behaviors.counter;
+
     return (
       <div>
         <h1>{name}</h1>
         <p>
-          Count: <span class="count">{count}</span>
+          Count: <UI.Text text={counter.get("The count as string")} />
         </p>
-        <button class="incr-btn">Increment</button>
-        <button class="decr-btn">Increment</button>
-        <script type="module">
-          {html`console.log(document.getElementById("incr-btn"))`}
-        </script>
-        <style>{html`.incr-btn{ color: red;}`}</style>
+        <UI.Button onClick={counter.when["Increment the count by"](1)}>
+          Increment
+        </UI.Button>
+        <UI.Button onClick={counter.when["Decrement the count by"](1)}>
+          Decrement
+        </UI.Button>
       </div>
     );
   },
