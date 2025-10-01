@@ -35,12 +35,7 @@ type ApplicationOptionsType = {
 
 export const createApplication = (options: ApplicationOptionsType) => {
   const app = new Hono();
-
-  // Make behaviors available globally if needed
-  if (options.behaviors) {
-    (globalThis as any).__behaviors = options.behaviors;
-  }
-
+  app.behaviors = options.behaviors;
   app.use(async (c, next) => {
     await next();
     const status = c.res.status;

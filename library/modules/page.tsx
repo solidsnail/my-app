@@ -23,6 +23,7 @@ export const createPage = <P,>({
 }: PageOptionsType<P>) => {
   app.get(route, (c) => {
     const serverProps = getServerSideProps(c);
+    console.log(app.behaviors);
     return c.render(
       <html>
         <head>

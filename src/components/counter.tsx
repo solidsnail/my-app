@@ -15,10 +15,10 @@ export default createComponent<{ name: string }>({
         <p>
           Count: <UI.Text text={counter.get("The count as string")} />
         </p>
-        <UI.Button onClick={counter.when["Increment the count by"](1)}>
+        <UI.Button onClick={() => counter.when["Increment the count by"](1)}>
           Increment
         </UI.Button>
-        <UI.Button onClick={counter.when["Decrement the count by"](1)}>
+        <UI.Button onClick={() => counter.when["Decrement the count by"](1)}>
           Decrement
         </UI.Button>
       </div>
