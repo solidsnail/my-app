@@ -50,6 +50,7 @@ export function createBehavior<
   // Bind actions to store
   for (const [key, action] of Object.entries(definition.actions)) {
     store.actions[key as keyof A] = action.bind({ state: store.state }) as any;
+    store.actions[key as keyof A].toJSON = () => action.toString();
   }
 
   const context: BehaviorContext<S, A> = { store };
@@ -64,18 +65,21 @@ export function createBehavior<
   if (methods.when) {
     for (const [key, method] of Object.entries(methods.when)) {
       boundMethods.when[key] = method.bind(context);
+      boundMethods.when[key].toJSON = () => method.toString();
     }
   }
 
   if (methods.then) {
     for (const [key, method] of Object.entries(methods.then)) {
       boundMethods.then[key] = method.bind(context);
+      boundMethods.then[key].toJSON = () => method.toString();
     }
   }
 
   if (methods.given) {
     for (const [key, method] of Object.entries(methods.given)) {
       boundMethods.given[key] = method.bind(context);
+      boundMethods.given[key].toJSON = () => method.toString();
     }
   }
 
