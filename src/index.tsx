@@ -1,11 +1,8 @@
 // src/index.tsx
 
 import { createApplication } from "../library/modules/application";
-import behaviors from "./behaviors";
 
-const app = createApplication({
-  behaviors,
-});
+const app = createApplication({});
 
 export default app;
 

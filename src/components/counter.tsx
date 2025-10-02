@@ -1,8 +1,5 @@
-// src/components/counter.tsx
-
 import { createComponent } from "../../library/modules/component";
 import { UI } from "../../library/ui";
-import behaviors from "../behaviors";
 
 export default createComponent<{ name: string }>({
   name: "Counter",
@@ -11,18 +8,10 @@ export default createComponent<{ name: string }>({
       <div>
         <h1>{name}</h1>
         <p>
-          Count: <UI.Text text={behaviors.counter.get("The count as string")} />
+          Count: <text>Test</text>
         </p>
-        <UI.Button
-          onClick={() => behaviors.counter.when["Increment the count by"](1)}
-        >
-          Increment
-        </UI.Button>
-        <UI.Button
-          onClick={() => behaviors.counter.when["Decrement the count by"](1)}
-        >
-          Decrement
-        </UI.Button>
+        <UI.Button>Increment</UI.Button>
+        <UI.Button>Decrement</UI.Button>
       </div>
     );
   },

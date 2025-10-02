@@ -6,7 +6,7 @@ type TextProps = {
 };
 
 type ButtonProps = {
-  onClick: () => Promise<void>;
+  onClick?: () => Promise<void>;
   children: any;
   class?: string;
 };
@@ -18,21 +18,9 @@ export const UI = {
 
   Button: ({ onClick, children, class: className }: ButtonProps) => {
     // Generate unique ID for this button
-    const id = `btn-${Math.random().toString(36).substr(2, 9)}`;
-    console.log(onClick.toString());
     return (
       <>
-        <button id={id} class={className}>
-          {children}
-        </button>
-        <script
-          type="module"
-          dangerouslySetInnerHTML={{
-            __html: `
-            document.getElementById('${id}').addEventListener('click', ${onClick.toString()});
-          `,
-          }}
-        />
+        <button class={className}>{children}</button>
       </>
     );
   },

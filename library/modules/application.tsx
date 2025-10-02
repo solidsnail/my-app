@@ -1,5 +1,3 @@
-// library/modules/application.tsx
-
 import { Hono } from "hono";
 import { statSync, readdirSync } from "fs";
 import { join } from "path";
@@ -29,13 +27,10 @@ const getPagesUrls = () => {
   }
 };
 
-type ApplicationOptionsType = {
-  behaviors?: Record<string, any>;
-};
+type ApplicationOptionsType = {};
 
 export const createApplication = (options: ApplicationOptionsType) => {
   const app = new Hono();
-  app.behaviors = options.behaviors;
   app.use(async (c, next) => {
     await next();
     const status = c.res.status;

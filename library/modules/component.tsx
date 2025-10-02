@@ -1,5 +1,3 @@
-// library/modules/component.tsx
-
 import { FC } from "hono/jsx";
 
 type ComponentOptionsType<P> = {

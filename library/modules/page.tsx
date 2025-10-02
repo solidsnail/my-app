@@ -1,5 +1,4 @@
 import { Context, Hono } from "hono";
-import { html, raw } from "hono/html";
 import { JSX } from "hono/jsx";
 import { BlankEnv, BlankInput, BlankSchema } from "hono/types";
 
@@ -24,30 +23,12 @@ export const createPage = <P,>({
 }: PageOptionsType<P>) => {
   app.get(route, (c) => {
     const serverProps = getServerSideProps(c);
-    const behaviorsCode = JSON.stringify(
-      app.behaviors,
-      (key, value) => {
-        // if (typeof value === "function") {
-        //   console.log(value.toString());
-        //   return value.toString();
-        // }
-        return value;
-      },
-      2
-    );
-    // console.log(behaviorsCode);
     return c.render(
       <html>
         <head>
           <title>{seo.title}</title>
         </head>
         <body>
-          <script
-            type="module"
-            dangerouslySetInnerHTML={{
-              __html: `window.behaviors = ${behaviorsCode}`,
-            }}
-          />
           <div>{render(serverProps)}</div>
         </body>
       </html>
