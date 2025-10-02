@@ -1,5 +1,3 @@
-// src/index.tsx
-
 import { createApplication } from "../library/modules/application";
 
 const app = createApplication({});
