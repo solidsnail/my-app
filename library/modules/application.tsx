@@ -26,6 +26,16 @@ const getPagesUrls = () => {
     return [];
   }
 };
+const getApiUrls = () => {
+  const apiDir = join(process.cwd(), "src", "api");
+  try {
+    const tsxFiles = getAllTsxFiles(apiDir);
+    return tsxFiles;
+  } catch (error) {
+    console.warn("Pages directory not found, skipping page registration");
+    return [];
+  }
+};
 
 type ApplicationOptionsType = {};
 
@@ -39,10 +49,13 @@ export const createApplication = (options: ApplicationOptionsType) => {
     );
   });
 
-  // Auto-register pages
   const pagesUrls = getPagesUrls();
+  const apiUrls = getApiUrls();
   for (const pageUrl of pagesUrls) {
     import(pageUrl);
+  }
+  for (const apiUrl of apiUrls) {
+    import(apiUrl);
   }
 
   return app;
