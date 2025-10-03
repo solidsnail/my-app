@@ -22,6 +22,10 @@ export type HtmxAttributes = {
   "hx-push-url"?: "true" | "false" | string;
   "hx-confirm"?: string;
   "hx-boost"?: "true" | "false";
+  "hx-headers"?: string;
+  "hx-disable"?: string;
+  "hx-disable-with"?: string;
+  "hx-params"?: string;
 };
 
 export const htmxScript = () => {
@@ -33,7 +37,7 @@ export const htmxScript = () => {
   "use strict";
 
   const HTMX = {
-    version: "1.0.0",
+    version: "1.1.0",
 
     init() {
       document.addEventListener("DOMContentLoaded", () => {
@@ -43,7 +47,7 @@ export const htmxScript = () => {
 
     processElement(element) {
       const elements = element.querySelectorAll(
-        "[hx-get], [hx-post], [hx-put], [hx-delete], [hx-patch]"
+        "[hx-get], [hx-post], [hx-put], [hx-delete], [hx-patch], [hx-boost]"
       );
       elements.forEach((el) => this.setupElement(el));
 
@@ -53,30 +57,66 @@ export const htmxScript = () => {
           element.hasAttribute("hx-post") ||
           element.hasAttribute("hx-put") ||
           element.hasAttribute("hx-delete") ||
-          element.hasAttribute("hx-patch"))
+          element.hasAttribute("hx-patch") ||
+          element.hasAttribute("hx-boost"))
       ) {
         this.setupElement(element);
       }
     },
 
     setupElement(el) {
+      // Handle hx-boost
+      if (el.hasAttribute("hx-boost")) {
+        if (el.tagName === "A") {
+          el.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.makeRequest(
+              el,
+              "get",
+              el.href,
+              el.getAttribute("hx-target"),
+              el.getAttribute("hx-swap") || "innerHTML",
+              el.getAttribute("hx-indicator"),
+              el.getAttribute("hx-vals"),
+              el.getAttribute("hx-include"),
+              el.getAttribute("hx-push-url"),
+              el.getAttribute("hx-select"),
+              el.getAttribute("hx-headers"),
+              el.getAttribute("hx-params")
+            );
+          });
+          return;
+        } else if (el.tagName === "FORM") {
+          el.addEventListener("submit", (e) => {
+            e.preventDefault();
+            this.makeRequest(
+              el,
+              el.method || "post",
+              el.action,
+              el.getAttribute("hx-target"),
+              el.getAttribute("hx-swap") || "innerHTML",
+              el.getAttribute("hx-indicator"),
+              el.getAttribute("hx-vals"),
+              el.getAttribute("hx-include"),
+              el.getAttribute("hx-push-url"),
+              el.getAttribute("hx-select"),
+              el.getAttribute("hx-headers"),
+              el.getAttribute("hx-params")
+            );
+          });
+          return;
+        }
+      }
+
       const method = this.getMethod(el);
       const url = el.getAttribute("hx-" + method);
       const trigger =
         el.getAttribute("hx-trigger") ||
         (el.tagName === "FORM" ? "submit" : "click");
-      const target = el.getAttribute("hx-target");
-      const swap = el.getAttribute("hx-swap") || "innerHTML";
-      const indicator = el.getAttribute("hx-indicator");
-      const confirm = el.getAttribute("hx-confirm");
-      const vals = el.getAttribute("hx-vals");
-      const include = el.getAttribute("hx-include");
-      const pushUrl = el.getAttribute("hx-push-url");
 
       if (!url) return;
 
       const triggers = trigger.split(",").map((t) => t.trim());
-      console.log({ triggers });
       triggers.forEach((trig) => {
         const [eventName, ...modifiers] = trig.split(" ");
         const eventOptions = this.parseModifiers(modifiers);
@@ -87,12 +127,15 @@ export const htmxScript = () => {
                 el,
                 method,
                 url,
-                target,
-                swap,
-                indicator,
-                vals,
-                include,
-                pushUrl
+                el.getAttribute("hx-target"),
+                el.getAttribute("hx-swap") || "innerHTML",
+                el.getAttribute("hx-indicator"),
+                el.getAttribute("hx-vals"),
+                el.getAttribute("hx-include"),
+                el.getAttribute("hx-push-url"),
+                el.getAttribute("hx-select"),
+                el.getAttribute("hx-headers"),
+                el.getAttribute("hx-params")
               );
               el.dataset.htmxTriggered = "true";
             });
@@ -106,29 +149,27 @@ export const htmxScript = () => {
                 e.preventDefault();
               }
 
-              if (confirm && !window.confirm(confirm)) {
-                return;
-              }
+              const confirmMsg = el.getAttribute("hx-confirm");
+              if (confirmMsg && !window.confirm(confirmMsg)) return;
 
-              if (eventOptions.once && el.dataset.htmxTriggered) {
-                return;
-              }
+              if (eventOptions.once && el.dataset.htmxTriggered) return;
 
               this.makeRequest(
                 el,
                 method,
                 url,
-                target,
-                swap,
-                indicator,
-                vals,
-                include,
-                pushUrl
+                el.getAttribute("hx-target"),
+                el.getAttribute("hx-swap") || "innerHTML",
+                el.getAttribute("hx-indicator"),
+                el.getAttribute("hx-vals"),
+                el.getAttribute("hx-include"),
+                el.getAttribute("hx-push-url"),
+                el.getAttribute("hx-select"),
+                el.getAttribute("hx-headers"),
+                el.getAttribute("hx-params")
               );
 
-              if (eventOptions.once) {
-                el.dataset.htmxTriggered = "true";
-              }
+              if (eventOptions.once) el.dataset.htmxTriggered = "true";
             });
             break;
         }
@@ -166,7 +207,10 @@ export const htmxScript = () => {
       indicatorSelector,
       vals,
       include,
-      pushUrl
+      pushUrl,
+      select,
+      headersAttr,
+      paramsAttr
     ) {
       const targetEl = targetSelector
         ? document.querySelector(targetSelector)
@@ -180,34 +224,56 @@ export const htmxScript = () => {
         return;
       }
 
-      if (indicatorEl) {
-        indicatorEl.style.display = "block";
+      // Show indicator
+      if (indicatorEl) indicatorEl.style.display = "block";
+
+      // Disable element if hx-disable is set
+      const disableText = el.getAttribute("hx-disable-with");
+      if (el.hasAttribute("hx-disable")) {
+        el.disabled = true;
+        if (disableText) el.dataset.htmxOriginal = el.innerHTML;
+        if (disableText) el.innerHTML = disableText;
       }
 
       try {
-        const body = this.getRequestBody(el, vals, include);
+        // Lifecycle event before request
+        targetEl.dispatchEvent(
+          new CustomEvent("htmx:beforeRequest", { detail: { el, url, method } })
+        );
+
+        const body = this.getRequestBody(el, vals, include, paramsAttr);
         const headers = {
           "HX-Request": "true",
           "HX-Current-URL": window.location.href,
         };
 
-        if (method !== "get" && body) {
-          headers["Content-Type"] = "application/json";
+        if (headersAttr) {
+          try {
+            Object.assign(headers, JSON.parse(headersAttr));
+          } catch (e) {
+            console.error("HTMX: Invalid hx-headers JSON:", headersAttr);
+          }
         }
 
-        const options = {
-          method: method.toUpperCase(),
-          headers,
-        };
+        if (method !== "get" && body) headers["Content-Type"] = "application/json";
 
-        if (method !== "get" && body) {
-          options.body = JSON.stringify(body);
-        }
+        const options = { method: method.toUpperCase(), headers };
+        if (method !== "get" && body) options.body = JSON.stringify(body);
 
         const response = await fetch(url, options);
         const html = await response.text();
 
-        this.performSwap(targetEl, html, swap);
+        // Lifecycle event after request
+        targetEl.dispatchEvent(
+          new CustomEvent("htmx:afterRequest", { detail: { el, response } })
+        );
+
+        // Lifecycle event before swap
+        targetEl.dispatchEvent(
+          new CustomEvent("htmx:beforeSwap", { detail: { el, html, swap } })
+        );
+
+        this.performSwap(targetEl, html, swap, select);
 
         if (pushUrl && pushUrl !== "false") {
           const newUrl = pushUrl === "true" ? url : pushUrl;
@@ -216,40 +282,43 @@ export const htmxScript = () => {
 
         this.processElement(targetEl);
 
+        // Lifecycle event after swap
         targetEl.dispatchEvent(
-          new CustomEvent("htmx:afterSwap", {
-            detail: { target: targetEl, swap },
-          })
+          new CustomEvent("htmx:afterSwap", { detail: { target: targetEl, swap } })
         );
       } catch (error) {
         console.error("HTMX: Request failed:", error);
         targetEl.dispatchEvent(
-          new CustomEvent("htmx:error", {
-            detail: { error },
-          })
+          new CustomEvent("htmx:responseError", { detail: { error } })
         );
       } finally {
-        if (indicatorEl) {
-          indicatorEl.style.display = "none";
+        if (indicatorEl) indicatorEl.style.display = "none";
+        if (el.hasAttribute("hx-disable")) {
+          el.disabled = false;
+          if (disableText && el.dataset.htmxOriginal) {
+            el.innerHTML = el.dataset.htmxOriginal;
+          }
         }
       }
     },
 
-    getRequestBody(el, vals, include) {
+    getRequestBody(el, vals, include, paramsAttr) {
       const body = {};
 
       const form = el.tagName === "FORM" ? el : el.closest("form");
       if (form) {
         const formData = new FormData(form);
+        const params = paramsAttr ? paramsAttr.split(",").map((p) => p.trim()) : null;
         formData.forEach((value, key) => {
-          body[key] = value;
+          if (!params || (params && params.includes(key))) {
+            body[key] = value;
+          }
         });
       }
 
       if (vals) {
         try {
-          const extraVals = JSON.parse(vals);
-          Object.assign(body, extraVals);
+          Object.assign(body, JSON.parse(vals));
         } catch (e) {
           console.error("HTMX: Invalid hx-vals JSON:", vals);
         }
@@ -267,33 +336,24 @@ export const htmxScript = () => {
       return Object.keys(body).length > 0 ? body : null;
     },
 
-    performSwap(target, html, swap) {
+    performSwap(target, html, swap, select) {
+      let content = html;
+      if (select) {
+        const temp = document.createElement("div");
+        temp.innerHTML = html;
+        content = temp.querySelector(select)?.innerHTML || "";
+      }
+
       switch (swap) {
-        case "innerHTML":
-          target.innerHTML = html;
-          break;
-        case "outerHTML":
-          target.outerHTML = html;
-          break;
-        case "beforebegin":
-          target.insertAdjacentHTML("beforebegin", html);
-          break;
-        case "afterbegin":
-          target.insertAdjacentHTML("afterbegin", html);
-          break;
-        case "beforeend":
-          target.insertAdjacentHTML("beforeend", html);
-          break;
-        case "afterend":
-          target.insertAdjacentHTML("afterend", html);
-          break;
-        case "delete":
-          target.remove();
-          break;
-        case "none":
-          break;
-        default:
-          target.innerHTML = html;
+        case "innerHTML": target.innerHTML = content; break;
+        case "outerHTML": target.outerHTML = content; break;
+        case "beforebegin": target.insertAdjacentHTML("beforebegin", content); break;
+        case "afterbegin": target.insertAdjacentHTML("afterbegin", content); break;
+        case "beforeend": target.insertAdjacentHTML("beforeend", content); break;
+        case "afterend": target.insertAdjacentHTML("afterend", content); break;
+        case "delete": target.remove(); break;
+        case "none": break;
+        default: target.innerHTML = content;
       }
     },
   };
@@ -301,8 +361,7 @@ export const htmxScript = () => {
   HTMX.init();
   window.htmx = HTMX;
 })();
-
-      `,
+        `,
       }}
     />
   );

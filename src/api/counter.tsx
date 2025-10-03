@@ -10,17 +10,17 @@ counterApp.get("/count", (c) => {
 
 counterApp.post("/increment", (c) => {
   count++;
-  return c.html(<>{count}</>);
+  return c.json(count);
 });
 
 counterApp.post("/decrement", (c) => {
   count--;
-  return c.html(<>{count}</>);
+  return c.json(count);
 });
 
 counterApp.post("/reset", (c) => {
   count = 0;
-  return c.html(<>{count}</>);
+  return c.json(count);
 });
 
 export default counterApp;
