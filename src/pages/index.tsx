@@ -18,12 +18,15 @@ export default createPage({
     return (
       <>
         <h1>Hello Hono!</h1>
-        <Counter name="Cool" />
+        <Counter name="Cool Counter" initialCount={0} />
         <ul>
           {props.messages.map((message) => {
             return <li>{message}!!</li>;
           })}
         </ul>
+        <p>
+          <a href="/demo">View HTMX Demo Page →</a>
+        </p>
       </>
     );
   },

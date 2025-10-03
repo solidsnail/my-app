@@ -1,10 +1,12 @@
 import { createApplication } from "../library/modules/application";
+import counterApp from "./api/counter";
 
 const app = createApplication({});
 
+app.route("/api/counter", counterApp);
+
 export default app;
 
-// Start the server
 Bun.serve({
   port: 3000,
   fetch: app.fetch,

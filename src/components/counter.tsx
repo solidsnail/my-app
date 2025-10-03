@@ -1,17 +1,38 @@
 import { createComponent } from "../../library/modules/component";
 import { UI } from "../../library/ui";
 
-export default createComponent<{ name: string }>({
+export default createComponent<{ name: string; initialCount?: number }>({
   name: "Counter",
-  render({ name }) {
+  render({ name, initialCount = 0 }) {
     return (
       <div>
         <h1>{name}</h1>
-        <p>
-          Count: <text>Test</text>
-        </p>
-        <UI.Button>Increment</UI.Button>
-        <UI.Button>Decrement</UI.Button>
+        <div id="counter-display">
+          <p>
+            Count: <span id="count-value">{initialCount}</span>
+          </p>
+        </div>
+        <UI.Button
+          hx-post="/api/counter/increment"
+          hx-target="#count-value"
+          hx-swap="innerHTML"
+        >
+          Increment
+        </UI.Button>
+        <UI.Button
+          hx-post="/api/counter/decrement"
+          hx-target="#count-value"
+          hx-swap="innerHTML"
+        >
+          Decrement
+        </UI.Button>
+        <UI.Button
+          hx-post="/api/counter/reset"
+          hx-target="#count-value"
+          hx-swap="innerHTML"
+        >
+          Reset
+        </UI.Button>
       </div>
     );
   },
