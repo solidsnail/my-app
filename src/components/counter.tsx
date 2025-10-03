@@ -1,3 +1,4 @@
+// src/components/counter.tsx
 import { createComponent } from "../../library/modules/component";
 import { UI } from "../../library/ui";
 
@@ -5,40 +6,63 @@ export default createComponent<{ name: string; initialCount?: number }>({
   name: "Counter",
   render({ name, initialCount = 0 }) {
     return (
-      <div
+      <UI.Box
+        p={6}
+        bg="#f8f9fa"
+        bdr="8px"
+        maw={400}
+        mx="auto"
+        mt={8}
         hx-get="/api/counter/count"
         hx-swap="innerHTML"
         hx-target="#count-value"
         hx-trigger="load"
       >
-        <h1>{name}</h1>
-        <div id="counter-display">
-          <p>
+        <UI.Text fz="xl" fw="bold" mb={4}>
+          {name}
+        </UI.Text>
+        <UI.Box
+          id="counter-display"
+          p={4}
+          bg="white"
+          bdr="4px"
+          ta="center"
+          mb={4}
+        >
+          <UI.Text fz="lg">
             Count: <span id="count-value">{initialCount}</span>
-          </p>
-        </div>
-        <UI.Button
-          hx-post="/api/counter/increment"
-          hx-target="#count-value"
-          hx-swap="innerHTML"
-        >
-          Increment
-        </UI.Button>
-        <UI.Button
-          hx-post="/api/counter/decrement"
-          hx-target="#count-value"
-          hx-swap="innerHTML"
-        >
-          Decrement
-        </UI.Button>
-        <UI.Button
-          hx-post="/api/counter/reset"
-          hx-target="#count-value"
-          hx-swap="innerHTML"
-        >
-          Reset
-        </UI.Button>
-      </div>
+          </UI.Text>
+        </UI.Box>
+        <UI.Group spacing={2} justify="center">
+          <UI.Button
+            size="md"
+            variant="filled"
+            hx-post="/api/counter/increment"
+            hx-target="#count-value"
+            hx-swap="innerHTML"
+          >
+            Increment
+          </UI.Button>
+          <UI.Button
+            size="md"
+            variant="outline"
+            hx-post="/api/counter/decrement"
+            hx-target="#count-value"
+            hx-swap="innerHTML"
+          >
+            Decrement
+          </UI.Button>
+          <UI.Button
+            size="md"
+            variant="subtle"
+            hx-post="/api/counter/reset"
+            hx-target="#count-value"
+            hx-swap="innerHTML"
+          >
+            Reset
+          </UI.Button>
+        </UI.Group>
+      </UI.Box>
     );
   },
 });
