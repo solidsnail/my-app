@@ -4,7 +4,7 @@ import { CSSProperties } from "hono/jsx";
 // Utility types for Mantine-like props
 type SpacingValue = number | string;
 type ColorValue = string;
-type SizeValue = "xs" | "sm" | "md" | "lg" | "xl" | number | string;
+type SizeValue = "xs" | "sm" | "md" | "lg" | "xl" | number | (string & {});
 
 // Common HTML attributes
 type CommonProps = {
@@ -423,7 +423,6 @@ export const UI = {
     const className = generateClassName("text");
     const userClass = commonProps.className || commonProps.class;
     const finalClass = userClass ? `${className} ${userClass}` : className;
-
     const css = generateCSS(className, styleProps, pseudoProps);
     const Component = component as any;
 
