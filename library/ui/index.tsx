@@ -6,6 +6,26 @@ type SpacingValue = number | string;
 type ColorValue = string;
 type SizeValue = "xs" | "sm" | "md" | "lg" | "xl" | number | string;
 
+// Common HTML attributes
+type CommonProps = {
+  id?: string;
+  class?: string;
+  className?: string; // Support both class and className
+  title?: string;
+  tabIndex?: number;
+  role?: string;
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
+  "aria-describedby"?: string;
+  "aria-hidden"?: boolean | "true" | "false";
+  "aria-disabled"?: boolean | "true" | "false";
+  "aria-expanded"?: boolean | "true" | "false";
+  "aria-selected"?: boolean | "true" | "false";
+  "data-testid"?: string;
+  // Allow any data-* attribute
+  [key: `data-${string}`]: string | number | boolean | undefined;
+};
+
 type StyleSystemProps = {
   // Dimensions
   w?: SizeValue;
@@ -189,127 +209,210 @@ const stylePropsToCSS = (props: StyleSystemProps): CSSProperties => {
   return styles;
 };
 
-// Generate a simple hash for class names
-const hashString = (str: string): string => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
+// Helper to extract common props
+const extractCommonProps = (props: any): [CommonProps, any] => {
+  const commonPropKeys = [
+    "id",
+    "class",
+    "className",
+    "title",
+    "tabIndex",
+    "role",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "aria-hidden",
+    "aria-disabled",
+    "aria-expanded",
+    "aria-selected",
+    "data-testid",
+  ];
+
+  const commonProps: CommonProps = {};
+  const remainingProps: any = {};
+
+  for (const [key, value] of Object.entries(props)) {
+    if (commonPropKeys.includes(key) || key.startsWith("data-")) {
+      (commonProps as any)[key] = value;
+    } else {
+      remainingProps[key] = value;
+    }
   }
-  return Math.abs(hash).toString(36).substring(0, 6);
+
+  return [commonProps, remainingProps];
+};
+
+// Helper to separate HTMX and style props
+const separateProps = (props: any) => {
+  const htmxAttrs: any = {};
+  const styleProps: StyleSystemProps = {};
+  const otherProps: any = {};
+
+  const styleKeys = [
+    "w",
+    "h",
+    "maw",
+    "mah",
+    "miw",
+    "mih",
+    "m",
+    "mt",
+    "mr",
+    "mb",
+    "ml",
+    "mx",
+    "my",
+    "p",
+    "pt",
+    "pr",
+    "pb",
+    "pl",
+    "px",
+    "py",
+    "c",
+    "bg",
+    "fz",
+    "fw",
+    "ta",
+    "td",
+    "tt",
+    "lh",
+    "display",
+    "opacity",
+    "bd",
+    "bdr",
+    "pos",
+    "top",
+    "right",
+    "bottom",
+    "left",
+    "inset",
+    "flex",
+    "direction",
+    "align",
+    "justify",
+    "gap",
+    "wrap",
+    "style",
+  ];
+
+  for (const [key, value] of Object.entries(props)) {
+    if (key.startsWith("hx-")) {
+      htmxAttrs[key] = value;
+    } else if (styleKeys.includes(key)) {
+      (styleProps as any)[key] = value;
+    } else {
+      otherProps[key] = value;
+    }
+  }
+
+  return { htmxAttrs, styleProps, otherProps };
 };
 
 // Component prop types with style system
-type TextProps = StyleSystemProps & {
-  text?: string;
-  children?: any;
-  class?: string;
-};
+type TextProps = StyleSystemProps &
+  CommonProps & {
+    text?: string;
+    children?: any;
+    component?: "span" | "p" | "div" | "label" | "strong" | "em" | "small";
+  };
 
 type ButtonProps = StyleSystemProps &
+  CommonProps &
   HtmxAttributes & {
     onClick?: () => Promise<void>;
     children: any;
-    class?: string;
     type?: "button" | "submit" | "reset";
     name?: string;
     value?: string;
     variant?: "filled" | "outline" | "subtle" | "light";
     size?: "xs" | "sm" | "md" | "lg" | "xl";
     disabled?: boolean;
+    form?: string;
   };
 
 type InputProps = StyleSystemProps &
+  CommonProps &
   HtmxAttributes & {
     type?: string;
     name: string;
     value?: string;
     placeholder?: string;
-    class?: string;
     size?: "xs" | "sm" | "md" | "lg" | "xl";
     disabled?: boolean;
     required?: boolean;
+    readonly?: boolean;
+    autocomplete?: string;
+    min?: string | number;
+    max?: string | number;
+    step?: string | number;
+    pattern?: string;
+    maxLength?: number;
+    minLength?: number;
   };
 
 type BoxProps = StyleSystemProps &
+  CommonProps &
   HtmxAttributes & {
     children?: any;
-    id?: string;
-    class?: string;
-    component?: string; // e.g., "div", "section", "article"
+    component?: string; // e.g., "div", "section", "article", "main", "aside", "header", "footer", "nav"
   };
 
 type StackProps = StyleSystemProps &
+  CommonProps &
   HtmxAttributes & {
     children?: any;
-    class?: string;
     spacing?: SpacingValue;
   };
 
 type GroupProps = StyleSystemProps &
+  CommonProps &
   HtmxAttributes & {
     children?: any;
-    class?: string;
+    spacing?: SpacingValue;
+  };
+
+type ContainerProps = StyleSystemProps &
+  CommonProps &
+  HtmxAttributes & {
+    children?: any;
+    size?: "xs" | "sm" | "md" | "lg" | "xl" | number;
+  };
+
+type GridProps = StyleSystemProps &
+  CommonProps &
+  HtmxAttributes & {
+    children?: any;
+    cols?: number;
     spacing?: SpacingValue;
   };
 
 export const UI = {
-  Text: ({ text, children, class: className, ...styleProps }: TextProps) => {
-    const styles = stylePropsToCSS(styleProps);
+  Text: ({ text, children, component = "span", ...allProps }: TextProps) => {
+    const [commonProps, remainingProps] = extractCommonProps(allProps);
+    const styles = stylePropsToCSS(remainingProps);
+    const className = commonProps.className || commonProps.class;
+    const Component = component as any;
+
     return (
-      <span class={className} style={styles}>
+      <Component {...commonProps} class={className} style={styles}>
         {text || children}
-      </span>
+      </Component>
     );
   },
 
   Button: ({
     onClick,
     children,
-    class: className,
     type = "button",
     variant = "filled",
     size = "md",
     disabled = false,
-    ...props
+    ...allProps
   }: ButtonProps) => {
-    const { style, ...styleSystemProps } = props;
-    const htmxAttrs: any = {};
-    const styleProps: StyleSystemProps = {};
-
-    // Separate HTMX attributes from style props
-    for (const [key, value] of Object.entries(props)) {
-      if (key.startsWith("hx-")) {
-        htmxAttrs[key] = value;
-      } else if (
-        [
-          "w",
-          "h",
-          "m",
-          "mt",
-          "mr",
-          "mb",
-          "ml",
-          "mx",
-          "my",
-          "p",
-          "pt",
-          "pr",
-          "pb",
-          "pl",
-          "px",
-          "py",
-          "c",
-          "bg",
-          "fz",
-          "fw",
-          "style",
-        ].includes(key)
-      ) {
-        (styleProps as any)[key] = value;
-      }
-    }
+    const [commonProps, remainingProps] = extractCommonProps(allProps);
+    const { htmxAttrs, styleProps, otherProps } = separateProps(remainingProps);
+    const className = commonProps.className || commonProps.class;
 
     // Button size presets
     const sizeStyles: Record<string, StyleSystemProps> = {
@@ -340,6 +443,8 @@ export const UI = {
 
     return (
       <button
+        {...commonProps}
+        {...otherProps}
         class={className}
         type={type}
         style={styles}
@@ -351,48 +456,10 @@ export const UI = {
     );
   },
 
-  Input: ({
-    class: className,
-    size = "md",
-    disabled = false,
-    ...props
-  }: InputProps) => {
-    const htmxAttrs: any = {};
-    const styleProps: StyleSystemProps = {};
-
-    for (const [key, value] of Object.entries(props)) {
-      if (key.startsWith("hx-")) {
-        htmxAttrs[key] = value;
-      } else if (
-        [
-          "w",
-          "h",
-          "m",
-          "mt",
-          "mr",
-          "mb",
-          "ml",
-          "mx",
-          "my",
-          "p",
-          "pt",
-          "pr",
-          "pb",
-          "pl",
-          "px",
-          "py",
-          "c",
-          "bg",
-          "fz",
-          "fw",
-          "bd",
-          "bdr",
-          "style",
-        ].includes(key)
-      ) {
-        (styleProps as any)[key] = value;
-      }
-    }
+  Input: ({ size = "md", disabled = false, ...allProps }: InputProps) => {
+    const [commonProps, remainingProps] = extractCommonProps(allProps);
+    const { htmxAttrs, styleProps, otherProps } = separateProps(remainingProps);
+    const className = commonProps.className || commonProps.class;
 
     const sizeStyles: Record<string, StyleSystemProps> = {
       xs: { px: 2, py: 1, fz: "xs", h: 30 },
@@ -412,118 +479,90 @@ export const UI = {
     };
 
     const styles = stylePropsToCSS(inputStyles);
-    const inputProps: any = {};
-
-    for (const [key, value] of Object.entries(props)) {
-      if (
-        !key.startsWith("hx-") &&
-        ![
-          "w",
-          "h",
-          "m",
-          "mt",
-          "mr",
-          "mb",
-          "ml",
-          "mx",
-          "my",
-          "p",
-          "pt",
-          "pr",
-          "pb",
-          "pl",
-          "px",
-          "py",
-          "c",
-          "bg",
-          "fz",
-          "fw",
-          "bd",
-          "bdr",
-          "style",
-          "size",
-        ].includes(key)
-      ) {
-        inputProps[key] = value;
-      }
-    }
 
     return (
       <input
+        {...commonProps}
+        {...otherProps}
         class={className}
         style={styles}
         disabled={disabled}
-        {...inputProps}
         {...htmxAttrs}
       />
     );
   },
 
-  Box: ({
-    children,
-    class: className,
-    component = "div",
-    ...props
-  }: BoxProps) => {
-    const htmxAttrs: any = {};
-    const styleProps: StyleSystemProps = {};
-
-    for (const [key, value] of Object.entries(props)) {
-      if (key.startsWith("hx-")) {
-        htmxAttrs[key] = value;
-      } else {
-        (styleProps as any)[key] = value;
-      }
-    }
-
+  Box: ({ children, component = "div", ...allProps }: BoxProps) => {
+    const [commonProps, remainingProps] = extractCommonProps(allProps);
+    const { htmxAttrs, styleProps } = separateProps(remainingProps);
+    const className = commonProps.className || commonProps.class;
     const styles = stylePropsToCSS(styleProps);
     const Component = component as any;
 
     return (
-      <Component class={className} style={styles} {...htmxAttrs}>
+      <Component
+        {...commonProps}
+        class={className}
+        style={styles}
+        {...htmxAttrs}
+      >
         {children}
       </Component>
     );
   },
 
-  Stack: ({
-    children,
-    class: className,
-    spacing = 4,
-    ...props
-  }: StackProps) => {
-    const stackProps: StyleSystemProps = {
+  Stack: ({ children, spacing = 4, ...allProps }: StackProps) => {
+    const stackProps: any = {
       display: "flex",
       direction: "column",
       gap: spacing,
-      ...props,
+      ...allProps,
     };
 
-    return (
-      <UI.Box class={className} {...stackProps}>
-        {children}
-      </UI.Box>
-    );
+    return <UI.Box {...stackProps}>{children}</UI.Box>;
   },
 
-  Group: ({
-    children,
-    class: className,
-    spacing = 4,
-    ...props
-  }: GroupProps) => {
-    const groupProps: StyleSystemProps = {
+  Group: ({ children, spacing = 4, ...allProps }: GroupProps) => {
+    const groupProps: any = {
       display: "flex",
       direction: "row",
       align: "center",
       gap: spacing,
-      ...props,
+      ...allProps,
     };
 
-    return (
-      <UI.Box class={className} {...groupProps}>
-        {children}
-      </UI.Box>
-    );
+    return <UI.Box {...groupProps}>{children}</UI.Box>;
+  },
+
+  Container: ({ children, size = "lg", ...allProps }: ContainerProps) => {
+    const sizeMap: Record<string, number> = {
+      xs: 540,
+      sm: 720,
+      md: 960,
+      lg: 1140,
+      xl: 1320,
+    };
+
+    const containerProps: any = {
+      maw: typeof size === "number" ? size : sizeMap[size],
+      mx: "auto",
+      px: 4,
+      ...allProps,
+    };
+
+    return <UI.Box {...containerProps}>{children}</UI.Box>;
+  },
+
+  Grid: ({ children, cols = 12, spacing = 4, ...allProps }: GridProps) => {
+    const gridProps: any = {
+      display: "grid",
+      style: {
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+      },
+      gap: spacing,
+      ...allProps,
+    };
+
+    return <UI.Box {...gridProps}>{children}</UI.Box>;
   },
 };
