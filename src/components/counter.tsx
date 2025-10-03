@@ -5,19 +5,16 @@ export default createComponent<{ name: string; initialCount?: number }>({
   name: "Counter",
   render({ name, initialCount = 0 }) {
     return (
-      <div>
+      <div
+        hx-get="/api/counter/count"
+        hx-swap="innerHTML"
+        hx-target="#count-value"
+        hx-trigger="load"
+      >
         <h1>{name}</h1>
         <div id="counter-display">
           <p>
-            Count:{" "}
-            <span
-              id="count-value"
-              hx-get="/api/counter/count"
-              hx-swap="innerHTML"
-              hx-trigger="load"
-            >
-              {initialCount}
-            </span>
+            Count: <span id="count-value">{initialCount}</span>
           </p>
         </div>
         <UI.Button
