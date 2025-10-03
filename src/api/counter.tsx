@@ -4,6 +4,10 @@ const counterApp = new Hono();
 
 let count = 0;
 
+counterApp.get("/count", (c) => {
+  return c.json(count);
+});
+
 counterApp.post("/increment", (c) => {
   count++;
   return c.html(<>{count}</>);

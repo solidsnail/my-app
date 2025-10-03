@@ -9,7 +9,15 @@ export default createComponent<{ name: string; initialCount?: number }>({
         <h1>{name}</h1>
         <div id="counter-display">
           <p>
-            Count: <span id="count-value">{initialCount}</span>
+            Count:{" "}
+            <span
+              id="count-value"
+              hx-get="/api/counter/count"
+              hx-swap="innerHTML"
+              hx-trigger="load"
+            >
+              {initialCount}
+            </span>
           </p>
         </div>
         <UI.Button
