@@ -1,9 +1,9 @@
 export type HtmxAttributes = {
   "hx-get"?: ApiDeclaration[keyof ApiDeclaration]["get"][number];
   "hx-post"?: ApiDeclaration[keyof ApiDeclaration]["post"][number];
-  "hx-put"?: string;
-  "hx-delete"?: string;
-  "hx-patch"?: string;
+  "hx-put"?: ApiDeclaration[keyof ApiDeclaration]["put"][number];
+  "hx-delete"?: ApiDeclaration[keyof ApiDeclaration]["delete"][number];
+  "hx-patch"?: ApiDeclaration[keyof ApiDeclaration]["patch"][number];
   "hx-target"?: string;
   "hx-swap"?:
     | "innerHTML"

@@ -6,5 +6,8 @@ type ApiDeclaration = {
       "/api/counter/decrement",
       "/api/counter/reset"
     ];
+    patch: [];
+    delete: [];
+    put: [];
   };
 };
