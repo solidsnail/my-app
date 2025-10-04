@@ -15,7 +15,7 @@ export default createComponent<{ name: string; initialCount?: number }>({
         hx-get="/api/counter/count"
         hx-swap="innerHTML"
         hx-target="#count-value"
-        hx-trigger="load"
+        hx-trigger="load delay:1s"
       >
         <UI.Text fz="xl" fw="bold" mb={4}>
           {name}

@@ -1,4 +1,19 @@
 // library/htmx/index.tsx
+
+type HtmxTriggerEvent =
+  | "click"
+  | "submit"
+  | "change"
+  | "keyup"
+  | "keydown"
+  | "mouseenter"
+  | "mouseleave"
+  | "focus"
+  | "blur"
+  | "load"
+  | "revealed"
+  | "intersect";
+
 export type HtmxAttributes = {
   "hx-get"?: ApiDeclaration[keyof ApiDeclaration]["get"][number];
   "hx-post"?: ApiDeclaration[keyof ApiDeclaration]["post"][number];
@@ -15,7 +30,7 @@ export type HtmxAttributes = {
     | "afterend"
     | "delete"
     | "none";
-  "hx-trigger"?: string;
+  "hx-trigger"?: HtmxTriggerEvent | (string & {});
   "hx-vals"?: string;
   "hx-include"?: string;
   "hx-select"?: string;
@@ -301,14 +316,28 @@ export const htmxScript = () => {
       modifiers.forEach((mod) => {
         if (mod === "once") options.once = true;
         if (mod === "changed") options.changed = true;
-        if (mod.startsWith("delay:"))
-          options.delay = parseInt(mod.split(":")[1]);
-        if (mod.startsWith("throttle:"))
-          options.throttle = parseInt(mod.split(":")[1]);
+        if (mod.startsWith("delay:")) {
+          const value = mod.split(":")[1];
+          options.delay = this.parseTime(value);
+        }
+        if (mod.startsWith("throttle:")) {
+          const value = mod.split(":")[1];
+          options.throttle = this.parseTime(value);
+        }
         if (mod.startsWith("threshold:"))
           options.threshold = parseFloat(mod.split(":")[1]);
       });
       return options;
+    },
+
+    parseTime(value) {
+      // Handle both "300ms" and "1s" formats
+      if (value.endsWith("ms")) {
+        return parseInt(value);
+      } else if (value.endsWith("s")) {
+        return parseInt(value) * 1000;
+      }
+      return parseInt(value); // Fallback to treating as ms
     },
 
     getMethod(el) {
