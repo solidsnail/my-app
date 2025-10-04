@@ -1,3 +1,4 @@
+// library/htmx/index.tsx
 export type HtmxAttributes = {
   "hx-get"?: ApiDeclaration[keyof ApiDeclaration]["get"][number];
   "hx-post"?: ApiDeclaration[keyof ApiDeclaration]["post"][number];
@@ -26,6 +27,14 @@ export type HtmxAttributes = {
   "hx-disable"?: string;
   "hx-disable-with"?: string;
   "hx-params"?: string;
+  "hx-ext"?: string;
+  "hx-sync"?: string;
+  "hx-validate"?: "true" | "false";
+  "hx-encoding"?: "multipart/form-data";
+  "hx-preserve"?: "true" | "false";
+  "hx-prompt"?: string;
+  "hx-replace-url"?: "true" | "false" | string;
+  "hx-on"?: string;
 };
 
 export const htmxScript = () => {
@@ -37,12 +46,72 @@ export const htmxScript = () => {
   "use strict";
 
   const HTMX = {
-    version: "1.1.0",
+    version: "1.2.0",
+    config: {
+      historyEnabled: true,
+      timeout: 0,
+      scrollBehavior: "smooth",
+      defaultSwapStyle: "innerHTML",
+      defaultSwapDelay: 0,
+      defaultSettleDelay: 20,
+      includeIndicatorStyles: true,
+      indicatorClass: "htmx-indicator",
+      requestClass: "htmx-request",
+      swappingClass: "htmx-swapping",
+      settlingClass: "htmx-settling",
+    },
 
     init() {
       document.addEventListener("DOMContentLoaded", () => {
         this.processElement(document.body);
+        this.setupHistoryHandling();
+        this.injectDefaultStyles();
       });
+    },
+
+    injectDefaultStyles() {
+      if (!this.config.includeIndicatorStyles) return;
+      
+      const style = document.createElement("style");
+      style.textContent = \`
+        .\${this.config.indicatorClass} {
+          display: none;
+        }
+        .\${this.config.requestClass} .\${this.config.indicatorClass} {
+          display: inline-block;
+        }
+        .\${this.config.swappingClass} {
+          opacity: 0;
+          transition: opacity 0.2s ease-out;
+        }
+        .\${this.config.settlingClass} {
+          opacity: 1;
+          transition: opacity 0.2s ease-in;
+        }
+      \`;
+      document.head.appendChild(style);
+    },
+
+    setupHistoryHandling() {
+      if (!this.config.historyEnabled) return;
+
+      window.addEventListener("popstate", (e) => {
+        if (e.state && e.state.htmx) {
+          // Restore page state from history
+          this.restoreHistory(e.state);
+        }
+      });
+    },
+
+    restoreHistory(state) {
+      // Restore content from history state
+      if (state.content && state.target) {
+        const target = document.querySelector(state.target);
+        if (target) {
+          target.innerHTML = state.content;
+          this.processElement(target);
+        }
+      }
     },
 
     processElement(element) {
@@ -65,6 +134,10 @@ export const htmxScript = () => {
     },
 
     setupElement(el) {
+      // Skip if already set up
+      if (el.dataset.htmxSetup) return;
+      el.dataset.htmxSetup = "true";
+
       // Handle hx-boost
       if (el.hasAttribute("hx-boost")) {
         if (el.tagName === "A") {
@@ -74,12 +147,12 @@ export const htmxScript = () => {
               el,
               "get",
               el.href,
-              el.getAttribute("hx-target"),
+              el.getAttribute("hx-target") || "body",
               el.getAttribute("hx-swap") || "innerHTML",
               el.getAttribute("hx-indicator"),
               el.getAttribute("hx-vals"),
               el.getAttribute("hx-include"),
-              el.getAttribute("hx-push-url"),
+              el.getAttribute("hx-push-url") || "true",
               el.getAttribute("hx-select"),
               el.getAttribute("hx-headers"),
               el.getAttribute("hx-params")
@@ -91,7 +164,7 @@ export const htmxScript = () => {
             e.preventDefault();
             this.makeRequest(
               el,
-              el.method || "post",
+              el.method.toLowerCase() || "post",
               el.action,
               el.getAttribute("hx-target"),
               el.getAttribute("hx-swap") || "innerHTML",
@@ -101,7 +174,8 @@ export const htmxScript = () => {
               el.getAttribute("hx-push-url"),
               el.getAttribute("hx-select"),
               el.getAttribute("hx-headers"),
-              el.getAttribute("hx-params")
+              el.getAttribute("hx-params"),
+              el.getAttribute("hx-encoding")
             );
           });
           return;
@@ -120,6 +194,11 @@ export const htmxScript = () => {
       triggers.forEach((trig) => {
         const [eventName, ...modifiers] = trig.split(" ");
         const eventOptions = this.parseModifiers(modifiers);
+        
+        let handler;
+        let timeout;
+        let lastValue;
+
         switch (eventName) {
           case "load":
             window.addEventListener("load", (e) => {
@@ -135,13 +214,41 @@ export const htmxScript = () => {
                 el.getAttribute("hx-push-url"),
                 el.getAttribute("hx-select"),
                 el.getAttribute("hx-headers"),
-                el.getAttribute("hx-params")
+                el.getAttribute("hx-params"),
+                el.getAttribute("hx-encoding")
               );
               el.dataset.htmxTriggered = "true";
             });
             break;
+
+          case "revealed":
+            // Trigger when element is scrolled into view
+            const observer = new IntersectionObserver((entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting && !el.dataset.htmxTriggered) {
+                  this.executeRequest(el, method, url);
+                  if (eventOptions.once) el.dataset.htmxTriggered = "true";
+                }
+              });
+            });
+            observer.observe(el);
+            break;
+
+          case "intersect":
+            // Similar to revealed but with custom options
+            const intersectObserver = new IntersectionObserver((entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  this.executeRequest(el, method, url);
+                  if (eventOptions.once) el.dataset.htmxTriggered = "true";
+                }
+              });
+            }, { threshold: eventOptions.threshold || 0 });
+            intersectObserver.observe(el);
+            break;
+
           default:
-            el.addEventListener(eventName, (e) => {
+            handler = (e) => {
               if (
                 eventName === "submit" ||
                 (eventName === "click" && el.tagName === "FORM")
@@ -149,28 +256,41 @@ export const htmxScript = () => {
                 e.preventDefault();
               }
 
+              // Handle hx-prompt
+              const promptMsg = el.getAttribute("hx-prompt");
+              if (promptMsg) {
+                const promptValue = window.prompt(promptMsg);
+                if (promptValue === null) return; // User cancelled
+                el.dataset.htmxPromptValue = promptValue;
+              }
+
+              // Handle hx-confirm
               const confirmMsg = el.getAttribute("hx-confirm");
               if (confirmMsg && !window.confirm(confirmMsg)) return;
 
               if (eventOptions.once && el.dataset.htmxTriggered) return;
 
-              this.makeRequest(
-                el,
-                method,
-                url,
-                el.getAttribute("hx-target"),
-                el.getAttribute("hx-swap") || "innerHTML",
-                el.getAttribute("hx-indicator"),
-                el.getAttribute("hx-vals"),
-                el.getAttribute("hx-include"),
-                el.getAttribute("hx-push-url"),
-                el.getAttribute("hx-select"),
-                el.getAttribute("hx-headers"),
-                el.getAttribute("hx-params")
-              );
+              // Handle changed modifier
+              if (eventOptions.changed) {
+                const currentValue = el.value || el.innerText;
+                if (currentValue === lastValue) return;
+                lastValue = currentValue;
+              }
+
+              // Handle delay/throttle
+              if (eventOptions.delay || eventOptions.throttle) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                  this.executeRequest(el, method, url);
+                }, eventOptions.delay || eventOptions.throttle);
+              } else {
+                this.executeRequest(el, method, url);
+              }
 
               if (eventOptions.once) el.dataset.htmxTriggered = "true";
-            });
+            };
+
+            el.addEventListener(eventName, handler);
             break;
         }
       });
@@ -185,6 +305,8 @@ export const htmxScript = () => {
           options.delay = parseInt(mod.split(":")[1]);
         if (mod.startsWith("throttle:"))
           options.throttle = parseInt(mod.split(":")[1]);
+        if (mod.startsWith("threshold:"))
+          options.threshold = parseFloat(mod.split(":")[1]);
       });
       return options;
     },
@@ -196,6 +318,24 @@ export const htmxScript = () => {
       if (el.hasAttribute("hx-delete")) return "delete";
       if (el.hasAttribute("hx-patch")) return "patch";
       return "get";
+    },
+
+    executeRequest(el, method, url) {
+      this.makeRequest(
+        el,
+        method,
+        url,
+        el.getAttribute("hx-target"),
+        el.getAttribute("hx-swap") || "innerHTML",
+        el.getAttribute("hx-indicator"),
+        el.getAttribute("hx-vals"),
+        el.getAttribute("hx-include"),
+        el.getAttribute("hx-push-url"),
+        el.getAttribute("hx-select"),
+        el.getAttribute("hx-headers"),
+        el.getAttribute("hx-params"),
+        el.getAttribute("hx-encoding")
+      );
     },
 
     async makeRequest(
@@ -210,7 +350,8 @@ export const htmxScript = () => {
       pushUrl,
       select,
       headersAttr,
-      paramsAttr
+      paramsAttr,
+      encoding
     ) {
       const targetEl = targetSelector
         ? document.querySelector(targetSelector)
@@ -224,28 +365,66 @@ export const htmxScript = () => {
         return;
       }
 
+      // Add request class
+      el.classList.add(this.config.requestClass);
+      
       // Show indicator
-      if (indicatorEl) indicatorEl.style.display = "block";
+      if (indicatorEl) {
+        indicatorEl.style.display = "block";
+      } else {
+        // Look for indicator children
+        const childIndicators = el.querySelectorAll(\`.\${this.config.indicatorClass}\`);
+        childIndicators.forEach(ind => ind.style.display = "block");
+      }
 
       // Disable element if hx-disable is set
       const disableText = el.getAttribute("hx-disable-with");
+      let originalText;
       if (el.hasAttribute("hx-disable")) {
         el.disabled = true;
-        if (disableText) el.dataset.htmxOriginal = el.innerHTML;
-        if (disableText) el.innerHTML = disableText;
+        if (disableText) {
+          originalText = el.innerHTML;
+          el.innerHTML = disableText;
+        }
+      }
+
+      // Handle hx-sync (prevent concurrent requests)
+      const syncAttr = el.getAttribute("hx-sync");
+      if (syncAttr) {
+        const [syncTarget, syncStrategy] = syncAttr.split(":");
+        const syncEl = syncTarget === "this" ? el : document.querySelector(syncTarget);
+        if (syncEl && syncEl.dataset.htmxRequesting) {
+          if (syncStrategy === "drop") return; // Drop this request
+          if (syncStrategy === "abort") {
+            // Abort ongoing request (simplified - real implementation would need AbortController)
+          }
+        }
+        if (syncEl) syncEl.dataset.htmxRequesting = "true";
       }
 
       try {
         // Lifecycle event before request
-        targetEl.dispatchEvent(
-          new CustomEvent("htmx:beforeRequest", { detail: { el, url, method } })
-        );
+        const beforeEvent = new CustomEvent("htmx:beforeRequest", {
+          detail: { el, url, method },
+          cancelable: true
+        });
+        const shouldContinue = targetEl.dispatchEvent(beforeEvent);
+        if (!shouldContinue) return;
 
-        const body = this.getRequestBody(el, vals, include, paramsAttr);
+        const body = this.getRequestBody(el, vals, include, paramsAttr, encoding);
         const headers = {
           "HX-Request": "true",
           "HX-Current-URL": window.location.href,
+          "HX-Trigger": el.id || el.name || "",
+          "HX-Trigger-Name": el.name || "",
+          "HX-Target": targetEl.id || "",
         };
+
+        // Add prompt value if exists
+        if (el.dataset.htmxPromptValue) {
+          headers["HX-Prompt"] = el.dataset.htmxPromptValue;
+          delete el.dataset.htmxPromptValue;
+        }
 
         if (headersAttr) {
           try {
@@ -255,12 +434,43 @@ export const htmxScript = () => {
           }
         }
 
-        if (method !== "get" && body) headers["Content-Type"] = "application/json";
-
         const options = { method: method.toUpperCase(), headers };
-        if (method !== "get" && body) options.body = JSON.stringify(body);
+        
+        if (method !== "get" && body) {
+          if (encoding === "multipart/form-data") {
+            options.body = body; // FormData
+            // Don't set Content-Type, browser will set it with boundary
+          } else {
+            headers["Content-Type"] = "application/json";
+            options.body = JSON.stringify(body);
+          }
+        }
+
+        // Add timeout if configured
+        let timeoutId;
+        if (this.config.timeout > 0) {
+          timeoutId = setTimeout(() => {
+            throw new Error("Request timeout");
+          }, this.config.timeout);
+        }
 
         const response = await fetch(url, options);
+        
+        if (timeoutId) clearTimeout(timeoutId);
+
+        // Check for HX-Redirect header
+        const hxRedirect = response.headers.get("HX-Redirect");
+        if (hxRedirect) {
+          window.location.href = hxRedirect;
+          return;
+        }
+
+        // Check for HX-Refresh header
+        if (response.headers.get("HX-Refresh") === "true") {
+          window.location.reload();
+          return;
+        }
+
         const html = await response.text();
 
         // Lifecycle event after request
@@ -269,56 +479,147 @@ export const htmxScript = () => {
         );
 
         // Lifecycle event before swap
-        targetEl.dispatchEvent(
-          new CustomEvent("htmx:beforeSwap", { detail: { el, html, swap } })
-        );
+        const beforeSwapEvent = new CustomEvent("htmx:beforeSwap", {
+          detail: { el, html, swap },
+          cancelable: true
+        });
+        const shouldSwap = targetEl.dispatchEvent(beforeSwapEvent);
+        if (!shouldSwap) return;
 
-        this.performSwap(targetEl, html, swap, select);
+        // Store current content for history
+        const currentContent = targetEl.innerHTML;
+        const currentScrollY = window.scrollY;
 
-        if (pushUrl && pushUrl !== "false") {
-          const newUrl = pushUrl === "true" ? url : pushUrl;
-          window.history.pushState({}, "", newUrl);
-        }
+        // Add swapping class
+        targetEl.classList.add(this.config.swappingClass);
 
-        this.processElement(targetEl);
+        // Perform swap after delay
+        setTimeout(() => {
+          this.performSwap(targetEl, html, swap, select);
 
-        // Lifecycle event after swap
-        targetEl.dispatchEvent(
-          new CustomEvent("htmx:afterSwap", { detail: { target: targetEl, swap } })
-        );
+          // Handle URL updates
+          if (pushUrl && pushUrl !== "false") {
+            const newUrl = pushUrl === "true" ? url : pushUrl;
+            const state = {
+              htmx: true,
+              content: currentContent,
+              target: targetSelector || "body",
+              scrollY: currentScrollY
+            };
+            window.history.pushState(state, "", newUrl);
+          }
+
+          const replaceUrl = el.getAttribute("hx-replace-url");
+          if (replaceUrl && replaceUrl !== "false") {
+            const newUrl = replaceUrl === "true" ? url : replaceUrl;
+            window.history.replaceState({}, "", newUrl);
+          }
+
+          // Remove swapping class and add settling class
+          targetEl.classList.remove(this.config.swappingClass);
+          targetEl.classList.add(this.config.settlingClass);
+
+          // Process new content
+          this.processElement(targetEl);
+
+          // Handle scroll behavior
+          const scrollTarget = el.getAttribute("hx-scroll");
+          if (scrollTarget) {
+            const scrollEl = scrollTarget === "true" ? targetEl : document.querySelector(scrollTarget);
+            if (scrollEl) {
+              scrollEl.scrollIntoView({ behavior: this.config.scrollBehavior });
+            }
+          }
+
+          // Lifecycle event after swap
+          targetEl.dispatchEvent(
+            new CustomEvent("htmx:afterSwap", { detail: { target: targetEl, swap } })
+          );
+
+          // Remove settling class after delay
+          setTimeout(() => {
+            targetEl.classList.remove(this.config.settlingClass);
+            
+            // Lifecycle event after settle
+            targetEl.dispatchEvent(
+              new CustomEvent("htmx:afterSettle", { detail: { target: targetEl } })
+            );
+          }, this.config.defaultSettleDelay);
+        }, this.config.defaultSwapDelay);
+
       } catch (error) {
         console.error("HTMX: Request failed:", error);
         targetEl.dispatchEvent(
           new CustomEvent("htmx:responseError", { detail: { error } })
         );
       } finally {
-        if (indicatorEl) indicatorEl.style.display = "none";
+        // Remove request class
+        el.classList.remove(this.config.requestClass);
+        
+        // Hide indicator
+        if (indicatorEl) {
+          indicatorEl.style.display = "none";
+        } else {
+          const childIndicators = el.querySelectorAll(\`.\${this.config.indicatorClass}\`);
+          childIndicators.forEach(ind => ind.style.display = "none");
+        }
+        
+        // Re-enable element
         if (el.hasAttribute("hx-disable")) {
           el.disabled = false;
-          if (disableText && el.dataset.htmxOriginal) {
-            el.innerHTML = el.dataset.htmxOriginal;
+          if (disableText && originalText) {
+            el.innerHTML = originalText;
           }
+        }
+
+        // Clear sync flag
+        const syncAttr = el.getAttribute("hx-sync");
+        if (syncAttr) {
+          const [syncTarget] = syncAttr.split(":");
+          const syncEl = syncTarget === "this" ? el : document.querySelector(syncTarget);
+          if (syncEl) delete syncEl.dataset.htmxRequesting;
         }
       }
     },
 
-    getRequestBody(el, vals, include, paramsAttr) {
-      const body = {};
+    getRequestBody(el, vals, include, paramsAttr, encoding) {
+      const useFormData = encoding === "multipart/form-data";
+      const body = useFormData ? new FormData() : {};
 
       const form = el.tagName === "FORM" ? el : el.closest("form");
       if (form) {
         const formData = new FormData(form);
         const params = paramsAttr ? paramsAttr.split(",").map((p) => p.trim()) : null;
+        
+        // Handle hx-validate
+        if (el.hasAttribute("hx-validate") && el.getAttribute("hx-validate") !== "false") {
+          if (!form.checkValidity()) {
+            form.reportValidity();
+            throw new Error("Form validation failed");
+          }
+        }
+
         formData.forEach((value, key) => {
-          if (!params || (params && params.includes(key))) {
-            body[key] = value;
+          if (!params || params.includes(key) || params.includes("*")) {
+            if (useFormData) {
+              body.append(key, value);
+            } else {
+              body[key] = value;
+            }
           }
         });
       }
 
       if (vals) {
         try {
-          Object.assign(body, JSON.parse(vals));
+          const valsObj = JSON.parse(vals);
+          if (useFormData) {
+            Object.entries(valsObj).forEach(([key, value]) => {
+              body.append(key, value);
+            });
+          } else {
+            Object.assign(body, valsObj);
+          }
         } catch (e) {
           console.error("HTMX: Invalid hx-vals JSON:", vals);
         }
@@ -328,11 +629,18 @@ export const htmxScript = () => {
         const includeEls = document.querySelectorAll(include);
         includeEls.forEach((includeEl) => {
           if (includeEl.name) {
-            body[includeEl.name] = includeEl.value;
+            if (useFormData) {
+              body.append(includeEl.name, includeEl.value);
+            } else {
+              body[includeEl.name] = includeEl.value;
+            }
           }
         });
       }
 
+      if (useFormData) {
+        return body.keys().next().done ? null : body;
+      }
       return Object.keys(body).length > 0 ? body : null;
     },
 
@@ -341,20 +649,54 @@ export const htmxScript = () => {
       if (select) {
         const temp = document.createElement("div");
         temp.innerHTML = html;
-        content = temp.querySelector(select)?.innerHTML || "";
+        const selectedEl = temp.querySelector(select);
+        content = selectedEl ? selectedEl.innerHTML : "";
       }
 
+      // Handle hx-preserve
+      const preserveEls = target.querySelectorAll("[hx-preserve], [data-hx-preserve]");
+      const preserved = new Map();
+      preserveEls.forEach(el => {
+        const id = el.id || \`preserve-\${Math.random()}\`;
+        el.id = id;
+        preserved.set(id, el.cloneNode(true));
+      });
+
       switch (swap) {
-        case "innerHTML": target.innerHTML = content; break;
-        case "outerHTML": target.outerHTML = content; break;
-        case "beforebegin": target.insertAdjacentHTML("beforebegin", content); break;
-        case "afterbegin": target.insertAdjacentHTML("afterbegin", content); break;
-        case "beforeend": target.insertAdjacentHTML("beforeend", content); break;
-        case "afterend": target.insertAdjacentHTML("afterend", content); break;
-        case "delete": target.remove(); break;
-        case "none": break;
-        default: target.innerHTML = content;
+        case "innerHTML":
+          target.innerHTML = content;
+          break;
+        case "outerHTML":
+          target.outerHTML = content;
+          return; // Target is replaced, can't restore preserved elements
+        case "beforebegin":
+          target.insertAdjacentHTML("beforebegin", content);
+          break;
+        case "afterbegin":
+          target.insertAdjacentHTML("afterbegin", content);
+          break;
+        case "beforeend":
+          target.insertAdjacentHTML("beforeend", content);
+          break;
+        case "afterend":
+          target.insertAdjacentHTML("afterend", content);
+          break;
+        case "delete":
+          setTimeout(() => target.remove(), 0);
+          return;
+        case "none":
+          break;
+        default:
+          target.innerHTML = content;
       }
+
+      // Restore preserved elements
+      preserved.forEach((el, id) => {
+        const newEl = document.getElementById(id);
+        if (newEl) {
+          newEl.replaceWith(el);
+        }
+      });
     },
   };
 
