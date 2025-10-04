@@ -3,7 +3,8 @@
     "hono": "jsr:@hono/hono@^4.9.9"
   },
   "tasks": {
-    "start": "deno run --allow-net --allow-read --unstable-raw-imports src/index.tsx"
+    "start": "deno run --allow-net --allow-read --unstable-raw-imports src/index.tsx",
+    "dev": "deno run --allow-net --allow-read --allow-env --watch --unstable-raw-imports src/index.tsx"
   },
   "compilerOptions": {
     "jsx": "precompile",

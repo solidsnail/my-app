@@ -1,7 +1,9 @@
+// library/modules/page.tsx
 import { Context, Hono } from "hono";
 import { JSX } from "hono/jsx";
 import { BlankEnv, BlankInput, BlankSchema } from "hono/types";
 import { htmxScript } from "../htmx/index.tsx";
+import { hmrScript } from "./hmr.tsx";
 
 type PageOptionsType<P> = {
   app: Hono<BlankEnv, BlankSchema, "/">;
@@ -14,6 +16,8 @@ type PageOptionsType<P> = {
   //@ts-expect-error Element is missing
   render: (props: P) => JSX.Element;
 };
+
+const isDev = Deno.env.get("DENO_ENV") !== "production";
 
 export const createPage = <P,>({
   name,
@@ -38,6 +42,7 @@ export const createPage = <P,>({
         <body>
           <div>{render(serverProps)}</div>
           {htmxScript()}
+          {isDev && hmrScript()}
         </body>
       </html>
     );

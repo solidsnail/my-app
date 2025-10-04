@@ -7,7 +7,7 @@ export default createComponent<{ name: string; initialCount?: number }>({
     return (
       <UI.Box
         p={6}
-        bg="yellow"
+        bg="red"
         bdr="8px"
         maw={400}
         mx="auto"
