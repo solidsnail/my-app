@@ -7,7 +7,7 @@ export default createComponent<{ name: string; initialCount?: number }>({
     return (
       <UI.Box
         p={6}
-        bg="#f8f9fa"
+        bg="yellow"
         bdr="8px"
         maw={400}
         mx="auto"
@@ -15,7 +15,7 @@ export default createComponent<{ name: string; initialCount?: number }>({
         hx-get="/api/counter/count"
         hx-swap="innerHTML"
         hx-target="#count-value"
-        hx-trigger="load delay:3000ms"
+        hx-trigger="load"
       >
         <UI.Text fz="xl" fw="bold" mb={4}>
           {name}

@@ -21,7 +21,7 @@ export default createPage({
         <Counter name="Cool Counter" initialCount={0} />
         <ul>
           {props.messages.map((message) => {
-            return <li>{message}!!</li>;
+            return <li key={message}>{message}!!</li>;
           })}
         </ul>
         <p>
