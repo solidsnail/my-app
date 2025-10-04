@@ -1,6 +1,6 @@
-import { createPage } from "../../library/modules/page";
-import Counter from "../components/counter";
-import app from "../index";
+import { createPage } from "../../library/modules/page.tsx";
+import Counter from "../components/counter.tsx";
+import { app } from "../index.tsx";
 
 export default createPage({
   app,

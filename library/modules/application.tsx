@@ -1,16 +1,19 @@
 import { Hono } from "hono";
-import { statSync, readdirSync } from "fs";
-import { join } from "path";
+import { statSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+import process from "node:process";
+import { pathToFileURL } from "node:url";
 
 function getAllTsxFiles(dir: string, fileList: string[] = []): string[] {
   const files = readdirSync(dir);
   for (const file of files) {
-    const filePath = join(dir, file);
+    const filePath = pathToFileURL(join(dir, file));
+    console.log(filePath.toString());
     const stat = statSync(filePath);
     if (stat.isDirectory()) {
-      getAllTsxFiles(filePath, fileList);
+      getAllTsxFiles(filePath.toString(), fileList);
     } else if (file.endsWith(".tsx")) {
-      fileList.push(filePath);
+      fileList.push(filePath.toString());
     }
   }
   return fileList;

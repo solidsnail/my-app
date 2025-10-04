@@ -1,4 +1,4 @@
-import { HtmxAttributes } from "../htmx";
+import { HtmxAttributes } from "../htmx/index.tsx";
 import { CSSProperties } from "hono/jsx";
 
 // Utility types for Mantine-like props

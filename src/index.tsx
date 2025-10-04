@@ -1,12 +1,9 @@
-import { createApplication } from "../library/modules/application";
+import { createApplication } from "../library/modules/application.tsx";
 
 const app = createApplication({});
 
-export default app;
-
-Bun.serve({
-  port: 3000,
-  fetch: app.fetch,
-});
+Deno.serve({ port: 3000 }, app.fetch);
 
 console.log("🚀 Server running at http://localhost:3000");
+
+export { app };

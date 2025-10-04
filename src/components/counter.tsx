@@ -1,5 +1,5 @@
-import { createComponent } from "../../library/modules/component";
-import { UI } from "../../library/ui";
+import { createComponent } from "../../library/modules/component.tsx";
+import { UI } from "../../library/ui/index.tsx";
 
 export default createComponent<{ name: string; initialCount?: number }>({
   name: "Counter",
@@ -15,7 +15,7 @@ export default createComponent<{ name: string; initialCount?: number }>({
         hx-get="/api/counter/count"
         hx-swap="innerHTML"
         hx-target="#count-value"
-        hx-trigger="load delay:1s"
+        hx-trigger="load delay:3000ms"
       >
         <UI.Text fz="xl" fw="bold" mb={4}>
           {name}

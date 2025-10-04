@@ -1,7 +1,7 @@
 import { Context, Hono } from "hono";
 import { JSX } from "hono/jsx";
 import { BlankEnv, BlankInput, BlankSchema } from "hono/types";
-import { htmxScript } from "../htmx";
+import { htmxScript } from "../htmx/index.tsx";
 
 type PageOptionsType<P> = {
   app: Hono<BlankEnv, BlankSchema, "/">;
