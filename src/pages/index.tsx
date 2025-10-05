@@ -18,7 +18,7 @@ export default createPage({
     return (
       <>
         <h1>Hello Hono!</h1>
-        <Counter name="Cool Counter" initialCount={0} />
+        <Counter name="Cool Counter" />
         <ul>
           {props.messages.map((message) => {
             return <li key={message}>{message}!!</li>;

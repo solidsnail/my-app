@@ -4,7 +4,6 @@ import { UI } from "../../library/ui/index.tsx";
 export default createComponent<{ name: string; initialCount?: number }>({
   name: "Counter",
   render({ name, initialCount = 0 }) {
-    console.log(test);
     return (
       <UI.Box
         p={6}
