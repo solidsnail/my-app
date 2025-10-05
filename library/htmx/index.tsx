@@ -1,5 +1,3 @@
-// import __html from "./index.js" with { type: "text" };
-
 const __html = `(function () {
   "use strict";
 
