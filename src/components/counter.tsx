@@ -39,6 +39,8 @@ export default createComponent<{ name: string; initialCount?: number }>({
             hx-post="/api/counter/increment"
             hx-target="#count-value"
             hx-swap="innerHTML"
+            w="400px"
+            bg="#228be6"
             hover={{ bg: "#1c7ed6" }}
             active={{ bg: "#1971c2" }}
           >

@@ -437,7 +437,6 @@ export const UI = {
   },
 
   Button: ({
-    onClick,
     children,
     type = "button",
     variant = "filled",

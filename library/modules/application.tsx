@@ -1,3 +1,4 @@
+// library/modules/application.tsx
 import { Hono } from "hono";
 import { BlankEnv, BlankSchema } from "hono/types";
 import { statSync, readdirSync } from "node:fs";
@@ -30,6 +31,7 @@ const getPagesUrls = () => {
     return [];
   }
 };
+
 const getApiUrls = () => {
   const apiDir = join(process.cwd(), "src", "api");
   try {
@@ -46,28 +48,13 @@ const startDevServer = (
   options: ApplicationOptionsType
 ) => {
   const port = options.port || 3000;
-  const hmrPort = port + 1;
   Deno.serve({ port }, app.fetch);
+
   const isDev = Deno.env.get("DENO_ENV") !== "production";
   if (isDev) {
-    const clients = new Set<WebSocket>();
     let reloadDebounce: number | null = null;
-    Deno.serve({ port: hmrPort }, (req) => {
-      if (req.headers.get("upgrade") !== "websocket") {
-        return new Response(null, { status: 501 });
-      }
-      const { socket, response } = Deno.upgradeWebSocket(req);
-      socket.addEventListener("open", () => {
-        clients.add(socket);
-        console.log("🔌 HMR client connected");
-      });
-      socket.addEventListener("close", () => {
-        clients.delete(socket);
-        console.log("🔌 HMR client disconnected");
-      });
-      return response;
-    });
     const watcher = Deno.watchFs(["./src", "./library"]);
+
     (async () => {
       for await (const event of watcher) {
         if (event.kind === "modify" || event.kind === "create") {
@@ -75,19 +62,13 @@ const startDevServer = (
             (p) => p.endsWith(".tsx") || p.endsWith(".ts")
           );
           if (hasRelevantChange) {
-            // Debounce multiple file system events
             if (reloadDebounce) {
               clearTimeout(reloadDebounce);
             }
             reloadDebounce = setTimeout(() => {
-              console.log("🔄 Files changed:", event.paths);
-              clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
-                  client.send(JSON.stringify({ type: "reload" }));
-                }
-              });
+              console.log("🔄 Files changed, restart server to apply changes");
               reloadDebounce = null;
-            }, 150); // Wait 150ms for file system to settle
+            }, 150);
           }
         }
       }
@@ -96,7 +77,7 @@ const startDevServer = (
 
   console.log(`🚀 Server running at http://localhost:${port}`);
   if (isDev) {
-    console.log(`🔥 HMR enabled on ws://localhost:${hmrPort}`);
+    console.log(`🔥 Dev mode enabled - watching for changes`);
   }
 };
 
