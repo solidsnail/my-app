@@ -20,6 +20,11 @@
       "integrity": "sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag=="
     }
   },
+  "remote": {
+    "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/htmx/index.tsx": "321d92eff2fa86e9c3d34e7241a32262208d738addba73a7deed1572cddf20d5",
+    "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/ui/index.tsx": "b9be794c38d1032892c205470af9dfaa48c3bd34e5c4b4a41235b6b70d6d16b6",
+    "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/ui/index.tsx?token=GHSAT0AAAAAADAQQPF7IZFMGIND7IL57FD22HCXLBQ": "b9be794c38d1032892c205470af9dfaa48c3bd34e5c4b4a41235b6b70d6d16b6"
+  },
   "workspace": {
     "dependencies": [
       "jsr:@hono/hono@^4.9.9"
