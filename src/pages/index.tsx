@@ -24,9 +24,6 @@ export default createPage({
             return <li key={message}>{message}!!</li>;
           })}
         </ul>
-        <p>
-          <a href="/demo">View HTMX Demo Page →</a>
-        </p>
       </>
     );
   },

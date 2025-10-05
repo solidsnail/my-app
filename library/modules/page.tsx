@@ -27,24 +27,46 @@ export const createPage = <P,>({
   render,
   getServerSideProps,
 }: PageOptionsType<P>) => {
-  app.get(route, (c) => {
-    const serverProps = getServerSideProps(c);
-    return c.html(
-      <html>
-        <head>
-          <title>{seo.title}</title>
-          <meta charset="UTF-8" />
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-        </head>
-        <body>
-          <div>{render(serverProps)}</div>
-          {htmxScript()}
-          {isDev && hmrScript()}
-        </body>
-      </html>
-    );
+  app.get(route, async (c) => {
+    try {
+      const serverProps = getServerSideProps(c);
+      const jsx = await render(serverProps);
+      return c.html(
+        <html>
+          <head>
+            <title>{seo.title}</title>
+            <meta charset="UTF-8" />
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1.0"
+            />
+          </head>
+          <body>
+            {jsx}
+            {htmxScript()}
+            {isDev && hmrScript()}
+          </body>
+        </html>
+      );
+    } catch (err) {
+      const error = err as Error;
+      return c.html(
+        <html>
+          <head>
+            <title>{seo.title}</title>
+            <meta charset="UTF-8" />
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1.0"
+            />
+          </head>
+          <body>
+            <b>{error.message}</b>
+            <i>{error.stack}</i>
+          </body>
+        </html>,
+        500
+      );
+    }
   });
 };
