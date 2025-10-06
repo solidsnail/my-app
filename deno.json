@@ -1,14 +1,19 @@
 {
   "imports": {
     "hono": "jsr:@hono/hono@^4.9.9",
-    "my-ui": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/ui/index.tsx"
+    "my-library/ui": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/ui/index.tsx",
+    "my-library/component": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/component.tsx",
+    "my-library/application": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/application.tsx",
+    "my-library/api": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/api.tsx",
+    "my-library/page": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/page.tsx"
   },
   "tasks": {
-    "start": "deno run --allow-net --allow-read --unstable-raw-imports src/index.tsx",
-    "dev": "deno run --allow-net --allow-read --allow-env  --watch=src/,library/ --unstable-raw-imports src/index.tsx"
+    "start": "deno run --allow-net --allow-read src/index.tsx",
+    "dev": "deno run --allow-net --allow-read --allow-env  --watch=src/,library/ src/index.tsx"
   },
   "compilerOptions": {
     "jsx": "precompile",
     "jsxImportSource": "hono/jsx"
-  }
+  },
+  "nodeModulesDir": "none"
 }

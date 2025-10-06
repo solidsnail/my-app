@@ -1,5 +1,5 @@
-import { createComponent } from "../../library/modules/component.tsx";
-import { UI } from "my-ui";
+import { createComponent } from "my-library/component";
+import { UI } from "my-library/ui";
 
 export default createComponent<{ name: string; initialCount?: number }>({
   name: "Counter",

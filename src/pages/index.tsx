@@ -1,4 +1,4 @@
-import { createPage } from "../../library/modules/page.tsx";
+import { createPage } from "my-library/page";
 import Counter from "../components/counter.tsx";
 import { app } from "../index.tsx";
 
