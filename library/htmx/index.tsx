@@ -1,3 +1,5 @@
+// import __html from "./index.js" with { type: "text" };
+
 const __html = `(function () {
   "use strict";
 
@@ -30,17 +32,17 @@ const __html = `(function () {
 
       const style = document.createElement("style");
       style.textContent =  \`
-        . \${this.config.indicatorClass} {
+        .\${this.config.indicatorClass} {
           display: none;
         }
-        . \${this.config.requestClass} . \${this.config.indicatorClass} {
+        .\${this.config.requestClass} .\${this.config.indicatorClass} {
           display: inline-block;
         }
-        . \${this.config.swappingClass} {
+        .\${this.config.swappingClass} {
           opacity: 0;
           transition: opacity 0.2s ease-out;
         }
-        . \${this.config.settlingClass} {
+        .\${this.config.settlingClass} {
           opacity: 1;
           transition: opacity 0.2s ease-in;
         }
@@ -347,7 +349,7 @@ const __html = `(function () {
       } else {
         // Look for indicator children
         const childIndicators = el.querySelectorAll(
-           \`. \${this.config.indicatorClass} \`
+           \`.\${this.config.indicatorClass} \`
         );
         childIndicators.forEach((ind) => (ind.style.display = "block"));
       }
@@ -549,7 +551,7 @@ const __html = `(function () {
           indicatorEl.style.display = "none";
         } else {
           const childIndicators = el.querySelectorAll(
-             \`. \${this.config.indicatorClass} \`
+             \`.\${this.config.indicatorClass} \`
           );
           childIndicators.forEach((ind) => (ind.style.display = "none"));
         }
@@ -655,7 +657,7 @@ const __html = `(function () {
       );
       const preserved = new Map();
       preserveEls.forEach((el) => {
-        const id = el.id || \`preserve- \${Math.random()} \`;
+        const id = el.id || \`preserve-\${Math.random()} \`;
         el.id = id;
         preserved.set(id, el.cloneNode(true));
       });
@@ -758,7 +760,7 @@ export const htmxScript = () => {
   return (
     <script
       dangerouslySetInnerHTML={{
-        __html: __html as unknown as string,
+        __html,
       }}
     />
   );
