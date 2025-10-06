@@ -21,7 +21,7 @@
     }
   },
   "remote": {
-    "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/htmx/index.tsx": "f62eb85e2346694b40fc71f136afa013aa20a5d38496f18ef00a4c8fd07f056a",
+    "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/htmx/index.tsx": "cc9ae297571f16684983bb914b7e764a3abdb609879418171fa3182749de0451",
     "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/ui/index.tsx": "b9be794c38d1032892c205470af9dfaa48c3bd34e5c4b4a41235b6b70d6d16b6"
   },
   "workspace": {
