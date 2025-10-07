@@ -299,7 +299,6 @@ const stylePropsToCSS = (props: StyleSystemProps): string => {
   if (props.cursor !== undefined) rules.push(`cursor: ${props.cursor}`);
   if (props.outline !== undefined) rules.push(`outline: ${props.outline}`);
 
-  // ✅ NEW: Apply inline style object keys as CSS
   if (props.style) {
     for (const [key, value] of Object.entries(props.style)) {
       if (value === undefined || value === null) continue;
