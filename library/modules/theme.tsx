@@ -180,7 +180,6 @@ export type GridProps = StyleSystemProps &
     spacing?: SpacingValue;
   };
 
-// Helper utilities
 const sizePresets: Record<string, string> = {
   xs: "0.75rem",
   sm: "0.875rem",
@@ -422,7 +421,6 @@ const separateProps = (props: any) => {
   return { htmxAttrs, styleProps, pseudoProps, otherProps };
 };
 
-// Helper utilities object
 export type ThemeHelpers = {
   generateClassName: typeof generateClassName;
   generateCSS: typeof generateCSS;
@@ -443,10 +441,8 @@ export const helpers: ThemeHelpers = {
   sizeValue,
 };
 
-// Component renderer type
 type ComponentRenderer<P> = (props: P, helpers: ThemeHelpers) => any;
 
-// Theme configuration type
 export type ThemeConfig = {
   Text?: ComponentRenderer<TextProps>;
   Button?: ComponentRenderer<ButtonProps>;
@@ -458,8 +454,7 @@ export type ThemeConfig = {
   Grid?: ComponentRenderer<GridProps>;
 };
 
-// Default component implementations
-// Default component implementations with wireframe black and white monospace aesthetic
+const fontFamily = "monospace";
 const defaultComponents = {
   Text: (
     { text, children, component = "span", ...allProps }: TextProps,
@@ -476,7 +471,7 @@ const defaultComponents = {
       c: "#000000",
       ...styleProps,
       style: {
-        fontFamily: "'Courier New', 'Courier', monospace",
+        fontFamily,
         ...styleProps.style,
       },
     };
@@ -535,7 +530,7 @@ const defaultComponents = {
       cursor: disabled ? "not-allowed" : "pointer",
       ...styleProps,
       style: {
-        fontFamily: "'Courier New', 'Courier', monospace",
+        fontFamily,
         textTransform: "uppercase" as const,
         letterSpacing: "0.05em",
         ...styleProps.style,
@@ -609,7 +604,7 @@ const defaultComponents = {
       c: disabled ? "#666666" : "#000000",
       ...styleProps,
       style: {
-        fontFamily: "'Courier New', 'Courier', monospace",
+        fontFamily,
         ...styleProps.style,
       },
     };
@@ -651,7 +646,7 @@ const defaultComponents = {
     const wireframeStyles = {
       ...styleProps,
       style: {
-        fontFamily: "'Courier New', 'Courier', monospace",
+        fontFamily,
         ...styleProps.style,
       },
     };
