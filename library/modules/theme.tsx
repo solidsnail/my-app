@@ -85,6 +85,7 @@ export type StyleSystemProps = {
   wrap?: "nowrap" | "wrap" | "wrap-reverse";
   style?: CSSProperties;
   cursor?: CSSProperties["cursor"];
+  outline?: CSSProperties["outline"];
 };
 
 export type PseudoProps = {
@@ -458,6 +459,7 @@ export type ThemeConfig = {
 };
 
 // Default component implementations
+// Default component implementations with wireframe black and white monospace aesthetic
 const defaultComponents = {
   Text: (
     { text, children, component = "span", ...allProps }: TextProps,
@@ -468,7 +470,18 @@ const defaultComponents = {
     const className = helpers.generateClassName("text");
     const userClass = commonProps.className || commonProps.class;
     const finalClass = userClass ? `${className} ${userClass}` : className;
-    const css = helpers.generateCSS(className, styleProps, pseudoProps);
+
+    // Wireframe monospace styling
+    const wireframeStyles = {
+      c: "#000000",
+      ...styleProps,
+      style: {
+        fontFamily: "'Courier New', 'Courier', monospace",
+        ...styleProps.style,
+      },
+    };
+
+    const css = helpers.generateCSS(className, wireframeStyles, pseudoProps);
     const Component = component as any;
 
     return (
@@ -507,30 +520,42 @@ const defaultComponents = {
       xl: { px: 6, py: 3, fz: "xl" },
     };
 
+    // Wireframe black and white variants
     const variantStyles: Record<string, StyleSystemProps> = {
-      filled: { bg: "#228be6", c: "white", bd: "none" },
-      outline: { bg: "transparent", c: "#228be6", bd: "1px solid #228be6" },
-      subtle: { bg: "#e7f5ff", c: "#228be6", bd: "none" },
-      light: { bg: "transparent", c: "#228be6", bd: "none" },
+      filled: { bg: "#000000", c: "#ffffff", bd: "2px solid #000000" },
+      outline: { bg: "#ffffff", c: "#000000", bd: "2px solid #000000" },
+      subtle: { bg: "#f5f5f5", c: "#000000", bd: "1px solid #cccccc" },
+      light: { bg: "transparent", c: "#000000", bd: "1px solid #000000" },
     };
 
     const buttonStyles = {
       ...sizeStyles[size],
       ...variantStyles[variant],
-      bdr: "4px",
+      bdr: "0px", // Sharp corners for wireframe look
       cursor: disabled ? "not-allowed" : "pointer",
       ...styleProps,
+      style: {
+        fontFamily: "'Courier New', 'Courier', monospace",
+        textTransform: "uppercase" as const,
+        letterSpacing: "0.05em",
+        ...styleProps.style,
+      },
     };
 
     const defaultPseudoProps: PseudoProps = {
       hover:
         variant === "filled"
-          ? { bg: "#1c7ed6" }
+          ? { bg: "#333333" }
           : variant === "outline"
-          ? { bg: "#e7f5ff" }
-          : {},
-      active: variant === "filled" ? { bg: "#1971c2" } : {},
-      disabled: { opacity: 0.6, cursor: "not-allowed" },
+          ? { bg: "#f5f5f5" }
+          : variant === "subtle"
+          ? { bg: "#e5e5e5" }
+          : { bg: "#f5f5f5" },
+      active:
+        variant === "filled"
+          ? { bg: "#000000", bd: "2px solid #000000" }
+          : { bg: "#e5e5e5" },
+      disabled: { opacity: 0.4, cursor: "not-allowed" },
       ...pseudoProps,
     };
 
@@ -578,16 +603,20 @@ const defaultComponents = {
 
     const inputStyles = {
       ...sizeStyles[size],
-      bd: "1px solid #ced4da",
-      bdr: "4px",
-      bg: disabled ? "#f1f3f5" : "white",
-      c: disabled ? "#868e96" : "black",
+      bd: "2px solid #000000",
+      bdr: "0px", // Sharp corners
+      bg: disabled ? "#f5f5f5" : "#ffffff",
+      c: disabled ? "#666666" : "#000000",
       ...styleProps,
+      style: {
+        fontFamily: "'Courier New', 'Courier', monospace",
+        ...styleProps.style,
+      },
     };
 
     const defaultPseudoProps: PseudoProps = {
-      focus: { bd: "1px solid #228be6" },
-      disabled: { bg: "#f1f3f5", c: "#868e96", cursor: "not-allowed" },
+      focus: { bd: "2px solid #000000", outline: "1px solid #000000" },
+      disabled: { bg: "#f5f5f5", c: "#666666", cursor: "not-allowed" },
       ...pseudoProps,
     };
 
@@ -617,7 +646,17 @@ const defaultComponents = {
     const className = helpers.generateClassName("box");
     const userClass = commonProps.className || commonProps.class;
     const finalClass = userClass ? `${className} ${userClass}` : className;
-    const css = helpers.generateCSS(className, styleProps, pseudoProps);
+
+    // Add monospace font to boxes by default
+    const wireframeStyles = {
+      ...styleProps,
+      style: {
+        fontFamily: "'Courier New', 'Courier', monospace",
+        ...styleProps.style,
+      },
+    };
+
+    const css = helpers.generateCSS(className, wireframeStyles, pseudoProps);
     const Component = component as any;
 
     return (
