@@ -523,7 +523,6 @@ const defaultComponents = {
     // Accordion base styles
     const baseStyles: StyleSystemProps = {
       bg: palette.white,
-      p: 3,
       mb: 2,
       style: {
         fontFamily,
@@ -547,17 +546,19 @@ const defaultComponents = {
       ta: "left",
       display: "flex",
       justify: "space-between",
+      p: 3,
       style: { listStyle: "none", userSelect: "none" },
     };
     const chevronStyles: StyleSystemProps = {
       c: palette.gray[600],
       display: "inline-block",
       style: {
-        rotate: "90deg",
+        transform: "rotate(90deg)",
+        transition: "transform 150ms ease-in-out",
       },
     };
     const contentStyles: StyleSystemProps = {
-      mt: 2,
+      p: 3,
     };
 
     const css = [
@@ -565,6 +566,7 @@ const defaultComponents = {
       helpers.generateCSS(summaryClass, summaryStyles),
       helpers.generateCSS(contentClass, contentStyles),
       helpers.generateCSS(chevronClass, chevronStyles),
+      `.${className}[open] .${chevronClass} { transform: rotate(-90deg); }`,
     ].join(" ");
 
     return (
