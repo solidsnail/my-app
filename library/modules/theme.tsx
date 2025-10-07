@@ -653,7 +653,7 @@ export const createTheme = (config: ThemeConfig = {}) => {
     Stack: (props: StackProps) => {
       const renderer =
         config.Stack ||
-        ((props: StackProps, helpers: ThemeHelpers) => {
+        ((props: StackProps, _: ThemeHelpers) => {
           const { spacing = 4, ...rest } = props;
           return theme.Box({
             display: "flex",
@@ -667,7 +667,7 @@ export const createTheme = (config: ThemeConfig = {}) => {
     Group: (props: GroupProps) => {
       const renderer =
         config.Group ||
-        ((props: GroupProps, helpers: ThemeHelpers) => {
+        ((props: GroupProps, _: ThemeHelpers) => {
           const { spacing = 4, ...rest } = props;
           return theme.Box({
             display: "flex",
@@ -682,7 +682,7 @@ export const createTheme = (config: ThemeConfig = {}) => {
     Container: (props: ContainerProps) => {
       const renderer =
         config.Container ||
-        ((props: ContainerProps, helpers: ThemeHelpers) => {
+        ((props: ContainerProps, _: ThemeHelpers) => {
           const { size = "lg", ...rest } = props;
           const sizeMap: Record<string, number> = {
             xs: 540,
@@ -703,7 +703,7 @@ export const createTheme = (config: ThemeConfig = {}) => {
     Grid: (props: GridProps) => {
       const renderer =
         config.Grid ||
-        ((props: GridProps, helpers: ThemeHelpers) => {
+        ((props: GridProps, _: ThemeHelpers) => {
           const { cols = 12, spacing = 4, ...rest } = props;
           return theme.Box({
             display: "grid",
