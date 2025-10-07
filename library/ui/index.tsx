@@ -1,6 +1,6 @@
 import { createTheme, TextProps, ButtonProps } from "my-library/theme";
 
-export const customTheme = createTheme({
+export const UI = createTheme({
   Button: (
     {
       children,
