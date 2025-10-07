@@ -525,7 +525,7 @@ const defaultComponents = {
       filled: { bg: "#000000", c: "#ffffff", bd: "2px solid #000000" },
       outline: { bg: "#ffffff", c: "#000000", bd: "2px solid #000000" },
       subtle: { bg: "#f5f5f5", c: "#000000", bd: "1px solid #cccccc" },
-      light: { bg: "transparent", c: "#000000", bd: "1px solid #000000" },
+      light: { bg: "transparent", c: "#000000", bd: "1px solid transparent" },
     };
 
     const buttonStyles = {

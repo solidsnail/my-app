@@ -54,7 +54,7 @@ export default createComponent<{ name: string; initialCount?: number }>({
           </UI.Button>
           <UI.Button
             size="md"
-            variant="subtle"
+            variant="light"
             hx-post="/api/counter/reset"
             hx-target="#count-value"
             hx-swap="innerHTML"
