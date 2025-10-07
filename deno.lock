@@ -27,7 +27,7 @@
     "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/component.tsx": "73a5d33f41cdfa1d27bef9e9dfec07127e3c03e250533972cacaa9d77508859e",
     "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/page.tsx": "82861d3b2bb1b2195263827c27b2e77d0be73cd780fd8d1aca095afc4e699089",
     "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/theme.tsx": "8853928dbdd5a7c71e8140e553cecde148fef166df74cd66fd10d4de38c520d6",
-    "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/ui/index.tsx": "b9be794c38d1032892c205470af9dfaa48c3bd34e5c4b4a41235b6b70d6d16b6"
+    "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/ui/index.tsx": "c17b41e4b4fa67c547a1d382e6741e6acba5dbfea4140fbf6ebacce77f7d5b18"
   },
   "workspace": {
     "dependencies": [

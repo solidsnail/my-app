@@ -40,9 +40,6 @@ export default createComponent<{ name: string; initialCount?: number }>({
             hx-target="#count-value"
             hx-swap="innerHTML"
             w="400px"
-            bg="#228be6"
-            hover={{ bg: "#1c7ed6" }}
-            active={{ bg: "#1971c2" }}
           >
             Increment
           </UI.Button>
@@ -52,7 +49,6 @@ export default createComponent<{ name: string; initialCount?: number }>({
             hx-post="/api/counter/decrement"
             hx-target="#count-value"
             hx-swap="innerHTML"
-            hover={{ bg: "#e7f5ff" }}
           >
             Decrement
           </UI.Button>
@@ -62,7 +58,6 @@ export default createComponent<{ name: string; initialCount?: number }>({
             hx-post="/api/counter/reset"
             hx-target="#count-value"
             hx-swap="innerHTML"
-            hover={{ bg: "#d0ebff" }}
           >
             Reset
           </UI.Button>
