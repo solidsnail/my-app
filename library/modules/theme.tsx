@@ -516,32 +516,46 @@ const defaultComponents = {
     const className = helpers.generateClassName("accordion");
     const summaryClass = helpers.generateClassName("accordion-summary");
     const contentClass = helpers.generateClassName("accordion-content");
+    const chevronClass = helpers.generateClassName("accordion-summary-chevron");
     const userClass = commonProps.className || commonProps.class;
     const finalClass = userClass ? `${className} ${userClass}` : className;
 
     // Accordion base styles
     const baseStyles: StyleSystemProps = {
-      bd: `1px solid ${palette.gray[300]}`,
       bg: palette.white,
       p: 3,
       mb: 2,
-      style: { fontFamily, fontSize: fontSizes.md },
+      style: {
+        fontFamily,
+        fontSize: fontSizes.md,
+        borderBottom: `1px solid ${palette.gray[300]}`,
+      },
       ...styleProps,
     };
 
     const pseudo: PseudoProps = {
-      hover: { bd: `1px solid ${palette.gray[400]}` },
+      hover: {
+        style: {
+          borderBottom: `1px solid ${palette.gray[400]}`,
+        },
+      },
       ...pseudoProps,
     };
 
     const summaryStyles: StyleSystemProps = {
-      display: "block",
       cursor: "default",
-      fw: "bold",
       ta: "left",
-      style: { listStyle: "none" },
+      display: "flex",
+      justify: "space-between",
+      style: { listStyle: "none", userSelect: "none" },
     };
-
+    const chevronStyles: StyleSystemProps = {
+      c: palette.gray[600],
+      display: "inline-block",
+      style: {
+        rotate: "90deg",
+      },
+    };
     const contentStyles: StyleSystemProps = {
       mt: 2,
     };
@@ -550,16 +564,18 @@ const defaultComponents = {
       helpers.generateCSS(className, baseStyles, pseudo),
       helpers.generateCSS(summaryClass, summaryStyles),
       helpers.generateCSS(contentClass, contentStyles),
+      helpers.generateCSS(chevronClass, chevronStyles),
     ].join(" ");
 
     return (
-      <>
+      <details {...commonProps} class={finalClass}>
         <style dangerouslySetInnerHTML={{ __html: css }} />
-        <details {...commonProps} class={finalClass}>
-          <summary class={summaryClass}>{summary}</summary>
-          <div class={contentClass}>{children}</div>
-        </details>
-      </>
+        <summary class={summaryClass}>
+          {summary}
+          <span class={chevronClass}>❯</span>
+        </summary>
+        <div class={contentClass}>{children}</div>
+      </details>
     );
   },
 
