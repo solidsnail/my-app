@@ -103,6 +103,14 @@ export type TextProps = StyleSystemProps &
     component?: "span" | "p" | "div" | "label" | "strong" | "em" | "small";
   };
 
+export type AccordionProps = StyleSystemProps &
+  CommonProps &
+  PseudoProps & {
+    text?: string;
+    children?: any;
+    summary: string;
+  };
+
 export type ButtonProps = StyleSystemProps &
   CommonProps &
   HtmxAttributes &
@@ -455,6 +463,7 @@ export const helpers: ThemeHelpers = {
 type ComponentRenderer<P> = (props: P, helpers: ThemeHelpers) => any;
 
 export type ThemeConfig = {
+  Accordion?: ComponentRenderer<AccordionProps>;
   Text?: ComponentRenderer<TextProps>;
   Button?: ComponentRenderer<ButtonProps>;
   Input?: ComponentRenderer<InputProps>;
@@ -466,7 +475,79 @@ export type ThemeConfig = {
 };
 
 const fontFamily = "monospace";
+
+// 🎨 Centralized color palette
+const palette = {
+  black: "#000000",
+  white: "#ffffff",
+  gray: {
+    50: "#f9f9f9",
+    100: "#f5f5f5",
+    200: "#e5e5e5",
+    300: "#cccccc",
+    400: "#999999",
+    500: "#666666",
+    600: "#333333",
+  },
+};
+
 const defaultComponents = {
+  Accordion: (
+    { children, summary = "Accordion", ...allProps }: AccordionProps,
+    helpers: ThemeHelpers
+  ) => {
+    const [commonProps, remainingProps] = helpers.extractCommonProps(allProps);
+    const { styleProps, pseudoProps } = helpers.separateProps(remainingProps);
+    const className = helpers.generateClassName("accordion");
+    const summaryClass = helpers.generateClassName("accordion-summary");
+    const contentClass = helpers.generateClassName("accordion-content");
+    const userClass = commonProps.className || commonProps.class;
+    const finalClass = userClass ? `${className} ${userClass}` : className;
+
+    // Accordion base styles
+    const baseStyles: StyleSystemProps = {
+      bd: `1px solid ${palette.gray[300]}`,
+      bg: palette.white,
+      p: 3,
+      mb: 2,
+      style: { fontFamily },
+      ...styleProps,
+    };
+
+    const pseudo: PseudoProps = {
+      hover: { bd: `1px solid ${palette.gray[400]}` },
+      ...pseudoProps,
+    };
+
+    const summaryStyles: StyleSystemProps = {
+      display: "block",
+      cursor: "default",
+      fw: "bold",
+      ta: "left",
+      style: { listStyle: "none" },
+    };
+
+    const contentStyles: StyleSystemProps = {
+      mt: 2,
+    };
+
+    const css = [
+      helpers.generateCSS(className, baseStyles, pseudo),
+      helpers.generateCSS(summaryClass, summaryStyles),
+      helpers.generateCSS(contentClass, contentStyles),
+    ].join(" ");
+
+    return (
+      <>
+        <style dangerouslySetInnerHTML={{ __html: css }} />
+        <details {...commonProps} class={finalClass}>
+          <summary class={summaryClass}>{summary}</summary>
+          <div class={contentClass}>{children}</div>
+        </details>
+      </>
+    );
+  },
+
   Text: (
     { text, children, component = "span", ...allProps }: TextProps,
     helpers: ThemeHelpers
@@ -479,7 +560,7 @@ const defaultComponents = {
 
     // Wireframe monospace styling
     const wireframeStyles = {
-      c: "#000000",
+      c: palette.black,
       ...styleProps,
       style: {
         fontFamily,
@@ -528,17 +609,33 @@ const defaultComponents = {
 
     // Wireframe black and white variants
     const variantStyles: Record<string, StyleSystemProps> = {
-      filled: { bg: "#000000", c: "#ffffff", bd: "2px solid #000000" },
-      outline: { bg: "#ffffff", c: "#000000", bd: "2px solid #000000" },
-      subtle: { bg: "#f5f5f5", c: "#000000", bd: "1px solid #cccccc" },
-      light: { bg: "transparent", c: "#000000", bd: "1px solid transparent" },
+      filled: {
+        bg: palette.black,
+        c: palette.white,
+        bd: `2px solid ${palette.black}`,
+      },
+      outline: {
+        bg: palette.white,
+        c: palette.black,
+        bd: `2px solid ${palette.black}`,
+      },
+      subtle: {
+        bg: palette.gray[100],
+        c: palette.black,
+        bd: `1px solid ${palette.gray[300]}`,
+      },
+      light: {
+        bg: "transparent",
+        c: palette.black,
+        bd: `1px solid transparent`,
+      },
     };
 
     const buttonStyles = {
       ...sizeStyles[size],
       ...variantStyles[variant],
-      bdr: "0px", // Sharp corners for wireframe look
-      cursor: disabled ? "not-allowed" : "pointer",
+      bdr: "0px",
+      cursor: disabled ? "not-allowed" : "default",
       ...styleProps,
       style: {
         fontFamily,
@@ -551,16 +648,16 @@ const defaultComponents = {
     const defaultPseudoProps: PseudoProps = {
       hover:
         variant === "filled"
-          ? { bg: "#333333" }
+          ? { bg: palette.gray[600] }
           : variant === "outline"
-          ? { bg: "#f5f5f5" }
+          ? { bg: palette.gray[100] }
           : variant === "subtle"
-          ? { bg: "#e5e5e5" }
-          : { bg: "#f5f5f5" },
+          ? { bg: palette.gray[200] }
+          : { bg: palette.gray[100] },
       active:
         variant === "filled"
-          ? { bg: "#000000", bd: "2px solid #000000" }
-          : { bg: "#e5e5e5" },
+          ? { bg: palette.black, bd: `2px solid ${palette.black}` }
+          : { bg: palette.gray[200] },
       disabled: { opacity: 0.4, cursor: "not-allowed" },
       ...pseudoProps,
     };
@@ -609,10 +706,10 @@ const defaultComponents = {
 
     const inputStyles = {
       ...sizeStyles[size],
-      bd: "2px solid #000000",
-      bdr: "0px", // Sharp corners
-      bg: disabled ? "#f5f5f5" : "#ffffff",
-      c: disabled ? "#666666" : "#000000",
+      bd: `2px solid ${palette.black}`,
+      bdr: "0px",
+      bg: disabled ? palette.gray[100] : palette.white,
+      c: disabled ? palette.gray[500] : palette.black,
       ...styleProps,
       style: {
         fontFamily,
@@ -621,8 +718,15 @@ const defaultComponents = {
     };
 
     const defaultPseudoProps: PseudoProps = {
-      focus: { bd: "2px solid #000000", outline: "1px solid #000000" },
-      disabled: { bg: "#f5f5f5", c: "#666666", cursor: "not-allowed" },
+      focus: {
+        bd: `2px solid ${palette.black}`,
+        outline: `1px solid ${palette.black}`,
+      },
+      disabled: {
+        bg: palette.gray[100],
+        c: palette.gray[500],
+        cursor: "not-allowed",
+      },
       ...pseudoProps,
     };
 
@@ -679,6 +783,10 @@ const defaultComponents = {
 // Create theme function
 export const createTheme = (config: ThemeConfig = {}) => {
   const theme = {
+    Accordion: (props: AccordionProps) => {
+      const renderer = config.Accordion || defaultComponents.Accordion;
+      return renderer(props, helpers);
+    },
     Text: (props: TextProps) => {
       const renderer = config.Text || defaultComponents.Text;
       return renderer(props, helpers);
