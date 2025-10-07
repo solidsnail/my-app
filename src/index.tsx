@@ -1,4 +1,4 @@
-import { createApplication } from "my-library/application";
+import { createApplication } from "../library/modules/application.tsx";
 
 const app = createApplication({});
 

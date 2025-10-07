@@ -1,5 +1,5 @@
+import { createApi } from "../../library/modules/api.tsx";
 import { app } from "../index.tsx";
-import { createApi } from "my-library/api";
 
 let count = 0;
 

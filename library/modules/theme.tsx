@@ -288,6 +288,17 @@ const stylePropsToCSS = (props: StyleSystemProps): string => {
     rules.push(`justify-content: ${props.justify}`);
   if (props.gap !== undefined) rules.push(`gap: ${spacingScale(props.gap)}`);
   if (props.wrap !== undefined) rules.push(`flex-wrap: ${props.wrap}`);
+  if (props.cursor !== undefined) rules.push(`cursor: ${props.cursor}`);
+  if (props.outline !== undefined) rules.push(`outline: ${props.outline}`);
+
+  // ✅ NEW: Apply inline style object keys as CSS
+  if (props.style) {
+    for (const [key, value] of Object.entries(props.style)) {
+      if (value === undefined || value === null) continue;
+      const cssKey = key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
+      rules.push(`${cssKey}: ${value}`);
+    }
+  }
 
   return rules.join("; ");
 };
