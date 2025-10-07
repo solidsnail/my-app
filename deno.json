@@ -5,7 +5,8 @@
     "my-library/component": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/component.tsx",
     "my-library/application": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/application.tsx",
     "my-library/api": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/api.tsx",
-    "my-library/page": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/page.tsx"
+    "my-library/page": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/page.tsx",
+    "my-library/theme": "https://raw.githubusercontent.com/solidsnail/my-app/refs/heads/master/library/modules/theme.tsx"
   },
   "tasks": {
     "start": "deno run --allow-net --allow-read src/index.tsx",
