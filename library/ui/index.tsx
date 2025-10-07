@@ -1,7 +1,6 @@
-import { createTheme, TextProps, ButtonProps, helpers } from "my-library/theme";
+import { createTheme, TextProps, ButtonProps } from "my-library/theme";
 
 export const customTheme = createTheme({
-  // Customize Button with rounded corners and different colors
   Button: (
     {
       children,
@@ -104,17 +103,3 @@ export const customTheme = createTheme({
     );
   },
 });
-
-// Use in components
-import { customTheme as UI } from "./theme.tsx";
-
-export default () => (
-  <UI.Box p={4}>
-    <UI.Text fz="xl" fw="bold">
-      Custom Theme!
-    </UI.Text>
-    <UI.Button variant="filled" size="lg">
-      Click Me
-    </UI.Button>
-  </UI.Box>
-);
