@@ -85,7 +85,6 @@ export type StyleSystemProps = {
   wrap?: "nowrap" | "wrap" | "wrap-reverse";
   style?: CSSProperties;
   cursor?: CSSProperties["cursor"];
-  outline?: CSSProperties["outline"];
 };
 
 export type PseudoProps = {
@@ -106,8 +105,7 @@ export type TextProps = StyleSystemProps &
 export type AccordionProps = StyleSystemProps &
   CommonProps &
   PseudoProps & {
-    text?: string;
-    children?: any;
+    children: any;
     summary: string;
   };
 
@@ -297,7 +295,6 @@ const stylePropsToCSS = (props: StyleSystemProps): string => {
   if (props.gap !== undefined) rules.push(`gap: ${spacingScale(props.gap)}`);
   if (props.wrap !== undefined) rules.push(`flex-wrap: ${props.wrap}`);
   if (props.cursor !== undefined) rules.push(`cursor: ${props.cursor}`);
-  if (props.outline !== undefined) rules.push(`outline: ${props.outline}`);
 
   if (props.style) {
     for (const [key, value] of Object.entries(props.style)) {
@@ -503,6 +500,15 @@ const palette = {
     500: "#666666",
     600: "#333333",
   },
+  red: {
+    50: "#fff1f2",
+    100: "#ffe4e6",
+    200: "#fecdd3",
+    300: "#fda4af",
+    400: "#fb7185",
+    500: "#f43f5e",
+    600: "#e11d48",
+  },
 };
 
 const defaultComponents = {
@@ -560,9 +566,19 @@ const defaultComponents = {
       p: 3,
     };
 
+    const summaryPseudo: PseudoProps = {
+      focus: {
+        style: {
+          outline: `2px solid ${palette.gray[500]}`,
+          outlineOffset: "2px",
+        },
+      },
+      ...pseudoProps,
+    };
+
     const css = [
       helpers.generateCSS(className, baseStyles, pseudo),
-      helpers.generateCSS(summaryClass, summaryStyles),
+      helpers.generateCSS(summaryClass, summaryStyles, summaryPseudo),
       helpers.generateCSS(contentClass, contentStyles),
       helpers.generateCSS(chevronClass, chevronStyles),
       `.${className}[open] .${chevronClass} { transform: rotate(-90deg); }`,
@@ -693,6 +709,12 @@ const defaultComponents = {
           ? { bg: palette.black, bd: `2px solid ${palette.black}` }
           : { bg: palette.gray[200] },
       disabled: { opacity: 0.4, cursor: "not-allowed" },
+      focus: {
+        style: {
+          outline: `2px solid ${palette.gray[500]}`,
+          outlineOffset: "2px",
+        },
+      },
       ...pseudoProps,
     };
 
@@ -754,8 +776,10 @@ const defaultComponents = {
 
     const defaultPseudoProps: PseudoProps = {
       focus: {
-        bd: `2px solid ${palette.black}`,
-        outline: `1px solid ${palette.black}`,
+        style: {
+          outline: `2px solid ${palette.gray[500]}`,
+          outlineOffset: "2px",
+        },
       },
       disabled: {
         bg: palette.gray[100],
@@ -793,7 +817,7 @@ const defaultComponents = {
     const finalClass = userClass ? `${className} ${userClass}` : className;
 
     // Add monospace font to boxes by default
-    const wireframeStyles = {
+    const boxStyles = {
       ...styleProps,
       style: {
         fontFamily,
@@ -802,7 +826,7 @@ const defaultComponents = {
       },
     };
 
-    const css = helpers.generateCSS(className, wireframeStyles, pseudoProps);
+    const css = helpers.generateCSS(className, boxStyles, pseudoProps);
     const Component = component as any;
 
     return (
