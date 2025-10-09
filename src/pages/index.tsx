@@ -20,17 +20,17 @@ export default createPage({
       <>
         <h1>Hello Hono!</h1>
         <Counter name="Cool Counter" />
-        <UI.Alert title="The alert title">The alert content</UI.Alert>
-        <UI.Alert title="The alert title" variant="error">
+        <UI.Alert $title="The alert title">The alert content</UI.Alert>
+        <UI.Alert $title="The alert title" $variant="error">
           The alert content
         </UI.Alert>
-        <UI.Alert title="The alert title" variant="info">
+        <UI.Alert $title="The alert title" $variant="info">
           The info alert content
         </UI.Alert>
-        <UI.Alert title="The alert title" variant="success">
+        <UI.Alert $title="The alert title" $variant="success">
           The success alert content
         </UI.Alert>
-        <UI.Alert title="The alert title" variant="warning">
+        <UI.Alert $title="The alert title" $variant="warning">
           The warning alert content
         </UI.Alert>
         <UI.Accordion summary="The accordion">

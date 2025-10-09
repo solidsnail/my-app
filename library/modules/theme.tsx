@@ -87,27 +87,26 @@ export type StyleSystemProps = {
 };
 
 export type PseudoProps = {
-  hover?: Partial<StyleSystemProps>;
-  active?: Partial<StyleSystemProps>;
-  focus?: Partial<StyleSystemProps>;
-  disabled?: Partial<StyleSystemProps>;
+  css_hover?: Partial<StyleSystemProps>;
+  css_active?: Partial<StyleSystemProps>;
+  css_focus?: Partial<StyleSystemProps>;
+  css_disabled?: Partial<StyleSystemProps>;
 };
 
 export type TextProps = StyleSystemProps &
   CommonProps &
   PseudoProps & {
-    text?: string;
-    children?: any;
-    component?: "span" | "p" | "div" | "label" | "strong" | "em" | "small";
+    $text?: string;
+    $component?: "span" | "p" | "div" | "label" | "strong" | "em" | "small";
   };
 
 export type AlertProps = StyleSystemProps &
   CommonProps &
   PseudoProps & {
     children: any;
-    variant?: "info" | "success" | "warning" | "error";
-    icon?: any;
-    title?: string;
+    $variant?: "info" | "success" | "warning" | "error";
+    $icon?: any;
+    $title?: string;
   };
 
 export type AccordionProps = StyleSystemProps &
@@ -322,18 +321,20 @@ const generateCSS = (
 ): string => {
   let css = `.${className} { ${stylePropsToCSS(baseProps)} }`;
 
-  if (pseudoProps?.hover) {
-    css += ` .${className}:hover { ${stylePropsToCSS(pseudoProps.hover)} }`;
+  if (pseudoProps?.css_hover) {
+    css += ` .${className}:hover { ${stylePropsToCSS(pseudoProps.css_hover)} }`;
   }
-  if (pseudoProps?.active) {
-    css += ` .${className}:active { ${stylePropsToCSS(pseudoProps.active)} }`;
+  if (pseudoProps?.css_active) {
+    css += ` .${className}:active { ${stylePropsToCSS(
+      pseudoProps.css_active
+    )} }`;
   }
-  if (pseudoProps?.focus) {
-    css += ` .${className}:focus { ${stylePropsToCSS(pseudoProps.focus)} }`;
+  if (pseudoProps?.css_focus) {
+    css += ` .${className}:focus { ${stylePropsToCSS(pseudoProps.css_focus)} }`;
   }
-  if (pseudoProps?.disabled) {
+  if (pseudoProps?.css_disabled) {
     css += ` .${className}:disabled { ${stylePropsToCSS(
-      pseudoProps.disabled
+      pseudoProps.css_disabled
     )} }`;
   }
 
@@ -522,7 +523,7 @@ const palette = {
 
 const defaultComponents = {
   Alert: (
-    { children, title, icon, ...allProps }: AlertProps,
+    { children, $title, $icon, $variant, ...allProps }: AlertProps,
     helpers: ThemeHelpers
   ) => {
     const [commonProps, remainingProps] = helpers.extractCommonProps(allProps);
@@ -534,6 +535,7 @@ const defaultComponents = {
       bd: `1px solid ${palette.gray[200]}`,
       display: "flex",
       direction: "column",
+      gap: 3,
       p: 3,
       style: { fontFamily, fontSize: fontSizes.md },
       ...styleProps,
@@ -546,7 +548,7 @@ const defaultComponents = {
       <>
         <style dangerouslySetInnerHTML={{ __html: css }} />
         <div role="alert" {...commonProps} class={className}>
-          {title && <b>{title}</b>}
+          {$title && <b>{$title}</b>}
           {children}
         </div>
       </>
@@ -576,7 +578,7 @@ const defaultComponents = {
     };
 
     const pseudo: PseudoProps = {
-      hover: {
+      css_hover: {
         style: {
           borderBottom: `1px solid ${palette.gray[400]}`,
         },
@@ -605,7 +607,7 @@ const defaultComponents = {
     };
 
     const summaryPseudo: PseudoProps = {
-      focus: {
+      css_focus: {
         style: {
           outline: `2px solid ${palette.gray[500]}`,
           outlineOffset: "2px",
@@ -634,7 +636,7 @@ const defaultComponents = {
     );
   },
   Text: (
-    { text, children, component = "span", ...allProps }: TextProps,
+    { $text, $component = "span", ...allProps }: TextProps,
     helpers: ThemeHelpers
   ) => {
     const [commonProps, remainingProps] = helpers.extractCommonProps(allProps);
@@ -653,13 +655,13 @@ const defaultComponents = {
     };
 
     const css = helpers.generateCSS(className, wireframeStyles, pseudoProps);
-    const Component = component as any;
+    const Component = $component as any;
 
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: css }} />
         <Component {...commonProps} class={className}>
-          {text || children}
+          {$text}
         </Component>
       </>
     );
@@ -728,7 +730,7 @@ const defaultComponents = {
     };
 
     const defaultPseudoProps: PseudoProps = {
-      hover:
+      css_hover:
         variant === "filled"
           ? { bg: palette.gray[600] }
           : variant === "outline"
@@ -736,12 +738,12 @@ const defaultComponents = {
           : variant === "subtle"
           ? { bg: palette.gray[200] }
           : { bg: palette.gray[100] },
-      active:
+      css_active:
         variant === "filled"
           ? { bg: palette.black, bd: `2px solid ${palette.black}` }
           : { bg: palette.gray[200] },
-      disabled: { opacity: 0.4, cursor: "not-allowed" },
-      focus: {
+      css_disabled: { opacity: 0.4, cursor: "not-allowed" },
+      css_focus: {
         style: {
           outline: `2px solid ${palette.gray[500]}`,
           outlineOffset: "2px",
@@ -804,13 +806,13 @@ const defaultComponents = {
     };
 
     const defaultPseudoProps: PseudoProps = {
-      focus: {
+      css_focus: {
         style: {
           outline: `2px solid ${palette.gray[500]}`,
           outlineOffset: "2px",
         },
       },
-      disabled: {
+      css_disabled: {
         bg: palette.gray[100],
         c: palette.gray[500],
         cursor: "not-allowed",
