@@ -17,9 +17,7 @@ export default createComponent<{ name: string; initialCount?: number }>({
         hx-target="#count-value"
         hx-trigger="load"
       >
-        <UI.Text fz="xl" fw="bold" mb={4}>
-          {name}
-        </UI.Text>
+        <UI.Text fz="xl" fw="bold" mb={4} $text={name} />
         <UI.Box
           id="counter-display"
           p={4}
@@ -28,9 +26,8 @@ export default createComponent<{ name: string; initialCount?: number }>({
           ta="center"
           mb={4}
         >
-          <UI.Text fz="lg">
-            Count: <span id="count-value">{initialCount}</span>
-          </UI.Text>
+          Count:{" "}
+          <UI.Text fz="lg" id="count-value" $text={initialCount.toString()} />
         </UI.Box>
         <UI.Group spacing={2} justify="center">
           <UI.Button

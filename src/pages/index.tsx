@@ -22,7 +22,7 @@ export default createPage({
         <Counter name="Cool Counter" />
         <UI.Alert $title="The alert title">The alert content</UI.Alert>
         <UI.Alert $title="The alert title" $variant="error">
-          The alert content
+          The error alert content
         </UI.Alert>
         <UI.Alert $title="The alert title" $variant="info">
           The info alert content
