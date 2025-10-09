@@ -16,7 +16,6 @@ export type SizeValue =
 
 export type CommonProps = {
   id?: string;
-  class?: string;
   className?: string;
   title?: string;
   tabIndex?: number;
@@ -100,6 +99,15 @@ export type TextProps = StyleSystemProps &
     text?: string;
     children?: any;
     component?: "span" | "p" | "div" | "label" | "strong" | "em" | "small";
+  };
+
+export type AlertProps = StyleSystemProps &
+  CommonProps &
+  PseudoProps & {
+    children: any;
+    variant?: "info" | "success" | "warning" | "error";
+    icon?: any;
+    title?: string;
   };
 
 export type AccordionProps = StyleSystemProps &
@@ -461,6 +469,7 @@ type ComponentRenderer<P> = (props: P, helpers: ThemeHelpers) => any;
 export type ThemeConfig = {
   Accordion?: ComponentRenderer<AccordionProps>;
   Text?: ComponentRenderer<TextProps>;
+  Alert?: ComponentRenderer<AlertProps>;
   Button?: ComponentRenderer<ButtonProps>;
   Input?: ComponentRenderer<InputProps>;
   Box?: ComponentRenderer<BoxProps>;
@@ -512,6 +521,37 @@ const palette = {
 };
 
 const defaultComponents = {
+  Alert: (
+    { children, title, icon, ...allProps }: AlertProps,
+    helpers: ThemeHelpers
+  ) => {
+    const [commonProps, remainingProps] = helpers.extractCommonProps(allProps);
+    const { styleProps } = helpers.separateProps(remainingProps);
+    const className = helpers.generateClassName("alert");
+
+    // Alert base styles
+    const baseStyles: StyleSystemProps = {
+      bd: `1px solid ${palette.gray[200]}`,
+      display: "flex",
+      direction: "column",
+      p: 3,
+      style: { fontFamily, fontSize: fontSizes.md },
+      ...styleProps,
+    };
+
+    const pseudo: PseudoProps = {};
+
+    const css = helpers.generateCSS(className, baseStyles, pseudo);
+    return (
+      <>
+        <style dangerouslySetInnerHTML={{ __html: css }} />
+        <div role="alert" {...commonProps} class={className}>
+          {title && <b>{title}</b>}
+          {children}
+        </div>
+      </>
+    );
+  },
   Accordion: (
     { children, summary = "Accordion", ...allProps }: AccordionProps,
     helpers: ThemeHelpers
@@ -522,8 +562,6 @@ const defaultComponents = {
     const summaryClass = helpers.generateClassName("accordion-summary");
     const contentClass = helpers.generateClassName("accordion-content");
     const chevronClass = helpers.generateClassName("accordion-summary-chevron");
-    const userClass = commonProps.className || commonProps.class;
-    const finalClass = userClass ? `${className} ${userClass}` : className;
 
     // Accordion base styles
     const baseStyles: StyleSystemProps = {
@@ -585,7 +623,7 @@ const defaultComponents = {
     ].join(" ");
 
     return (
-      <details {...commonProps} class={finalClass}>
+      <details {...commonProps} class={className}>
         <style dangerouslySetInnerHTML={{ __html: css }} />
         <summary class={summaryClass}>
           {summary}
@@ -595,7 +633,6 @@ const defaultComponents = {
       </details>
     );
   },
-
   Text: (
     { text, children, component = "span", ...allProps }: TextProps,
     helpers: ThemeHelpers
@@ -603,8 +640,6 @@ const defaultComponents = {
     const [commonProps, remainingProps] = helpers.extractCommonProps(allProps);
     const { styleProps, pseudoProps } = helpers.separateProps(remainingProps);
     const className = helpers.generateClassName("text");
-    const userClass = commonProps.className || commonProps.class;
-    const finalClass = userClass ? `${className} ${userClass}` : className;
 
     // Wireframe monospace styling
     const wireframeStyles = {
@@ -623,13 +658,12 @@ const defaultComponents = {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: css }} />
-        <Component {...commonProps} class={finalClass}>
+        <Component {...commonProps} class={className}>
           {text || children}
         </Component>
       </>
     );
   },
-
   Button: (
     {
       children,
@@ -645,8 +679,6 @@ const defaultComponents = {
     const { htmxAttrs, styleProps, pseudoProps, otherProps } =
       helpers.separateProps(remainingProps);
     const className = helpers.generateClassName("btn");
-    const userClass = commonProps.className || commonProps.class;
-    const finalClass = userClass ? `${className} ${userClass}` : className;
 
     const sizeStyles: Record<string, StyleSystemProps> = {
       xs: { px: 2, py: 1, fz: "xs" },
@@ -730,7 +762,7 @@ const defaultComponents = {
         <button
           {...commonProps}
           {...otherProps}
-          class={finalClass}
+          class={className}
           type={type}
           disabled={disabled}
           {...htmxAttrs}
@@ -740,7 +772,6 @@ const defaultComponents = {
       </>
     );
   },
-
   Input: (
     { size = "md", disabled = false, ...allProps }: InputProps,
     helpers: ThemeHelpers
@@ -749,8 +780,6 @@ const defaultComponents = {
     const { htmxAttrs, styleProps, pseudoProps, otherProps } =
       helpers.separateProps(remainingProps);
     const className = helpers.generateClassName("input");
-    const userClass = commonProps.className || commonProps.class;
-    const finalClass = userClass ? `${className} ${userClass}` : className;
 
     const sizeStyles: Record<string, StyleSystemProps> = {
       xs: { px: 2, py: 1, fz: "xs", h: 30 },
@@ -797,14 +826,13 @@ const defaultComponents = {
         <input
           {...commonProps}
           {...otherProps}
-          class={finalClass}
+          class={className}
           disabled={disabled}
           {...htmxAttrs}
         />
       </>
     );
   },
-
   Box: (
     { children, component = "div", ...allProps }: BoxProps,
     helpers: ThemeHelpers
@@ -813,8 +841,6 @@ const defaultComponents = {
     const { htmxAttrs, styleProps, pseudoProps } =
       helpers.separateProps(remainingProps);
     const className = helpers.generateClassName("box");
-    const userClass = commonProps.className || commonProps.class;
-    const finalClass = userClass ? `${className} ${userClass}` : className;
 
     // Add monospace font to boxes by default
     const boxStyles = {
@@ -832,7 +858,7 @@ const defaultComponents = {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: css }} />
-        <Component {...commonProps} class={finalClass} {...htmxAttrs}>
+        <Component {...commonProps} class={className} {...htmxAttrs}>
           {children}
         </Component>
       </>
@@ -843,6 +869,10 @@ const defaultComponents = {
 // Create theme function
 export const createTheme = (config: ThemeConfig = {}) => {
   const theme = {
+    Alert: (props: AlertProps) => {
+      const renderer = config.Alert || defaultComponents.Alert;
+      return renderer(props, helpers);
+    },
     Accordion: (props: AccordionProps) => {
       const renderer = config.Accordion || defaultComponents.Accordion;
       return renderer(props, helpers);
