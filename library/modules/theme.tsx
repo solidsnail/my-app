@@ -563,11 +563,6 @@ const defaultComponents = {
     { children, $title, $icon, $variant, ...allProps }: AlertProps,
     helpers: ThemeHelpers
   ) => {
-    const [commonProps, remainingProps] = helpers.extractCommonProps(allProps);
-    const { styleProps } = helpers.separateProps(remainingProps);
-    const className = helpers.generateClassName("alert");
-
-    // Alert base styles
     const baseStyles: StyleSystemProps = {
       bd: `1px solid ${palette.gray[200]}`,
       display: "flex",
@@ -575,16 +570,21 @@ const defaultComponents = {
       gap: 3,
       p: 3,
       style: { fontFamily, fontSize: fontSizes.md },
-      ...styleProps,
     };
 
     const pseudo: PseudoProps = {};
 
-    const css = helpers.generateCSS(className, baseStyles, pseudo);
+    const { attrs, css } = helpers.generateAttrs(
+      "alert",
+      allProps,
+      baseStyles,
+      pseudo
+    );
+
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: css }} />
-        <div role="alert" {...commonProps} class={className}>
+        <div role="alert" {...attrs}>
           {$title && <b>{$title}</b>}
           {children}
         </div>
