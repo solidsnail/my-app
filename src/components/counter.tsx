@@ -37,6 +37,9 @@ export default createComponent<{ name: string; initialCount?: number }>({
             hx-target="#count-value"
             hx-swap="innerHTML"
             w="400px"
+            css_hover={{
+              bg: "red",
+            }}
           >
             Increment
           </UI.Button>

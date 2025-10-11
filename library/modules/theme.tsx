@@ -463,7 +463,7 @@ const separateProps = (props: any) => {
     "cursor",
   ];
 
-  const pseudoKeys = ["hover", "active", "focus", "disabled"];
+  const pseudoKeys = ["css_hover", "css_active", "css_focus", "css_disabled"];
 
   for (const [key, value] of Object.entries(props)) {
     if (key.startsWith("hx-")) {
