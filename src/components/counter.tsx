@@ -31,15 +31,11 @@ export default createComponent<{ name: string; initialCount?: number }>({
         </UI.Box>
         <UI.Group spacing={2} justify="center">
           <UI.Button
-            size="md"
             variant="filled"
             hx-post="/api/counter/increment"
             hx-target="#count-value"
             hx-swap="innerHTML"
             w="400px"
-            css_hover={{
-              bg: "red",
-            }}
           >
             Increment
           </UI.Button>
