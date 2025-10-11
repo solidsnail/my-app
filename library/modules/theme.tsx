@@ -215,6 +215,41 @@ const sizeValue = (value: SizeValue): string => {
   return sizePresets[value] || value;
 };
 
+const generateAttrs = (
+  name: string,
+  props: Record<string, any>,
+  styles: StyleSystemProps,
+  defaultPseudoProps: PseudoProps
+) => {
+  const [commonProps, remainingProps] = helpers.extractCommonProps(props);
+  const { htmxAttrs, styleProps, pseudoProps, otherProps } =
+    helpers.separateProps(remainingProps);
+  const className = helpers.generateClassName(name);
+  const css = helpers.generateCSS(
+    className,
+    {
+      ...styleProps,
+      ...styles,
+      style: {
+        ...styleProps.style,
+        ...styles.style,
+      },
+    },
+    { ...defaultPseudoProps, ...pseudoProps }
+  );
+
+  const attrs = {
+    ...commonProps,
+    ...otherProps,
+    ...htmxAttrs,
+    className: [className, commonProps.className].join(" "),
+  };
+  return {
+    attrs,
+    css,
+  };
+};
+
 let classCounter = 0;
 const generateClassName = (prefix: string = "ui") => {
   return `${prefix}-${++classCounter}`;
@@ -453,6 +488,7 @@ export type ThemeHelpers = {
   separateProps: typeof separateProps;
   spacingScale: typeof spacingScale;
   sizeValue: typeof sizeValue;
+  generateAttrs: typeof generateAttrs;
 };
 
 export const helpers: ThemeHelpers = {
@@ -463,6 +499,7 @@ export const helpers: ThemeHelpers = {
   separateProps,
   spacingScale,
   sizeValue,
+  generateAttrs,
 };
 
 type ComponentRenderer<P> = (props: P, helpers: ThemeHelpers) => any;
@@ -677,11 +714,6 @@ const defaultComponents = {
     }: ButtonProps,
     helpers: ThemeHelpers
   ) => {
-    const [commonProps, remainingProps] = helpers.extractCommonProps(allProps);
-    const { htmxAttrs, styleProps, pseudoProps, otherProps } =
-      helpers.separateProps(remainingProps);
-    const className = helpers.generateClassName("btn");
-
     const sizeStyles: Record<string, StyleSystemProps> = {
       xs: { px: 2, py: 1, fz: "xs" },
       sm: { px: 3, py: 1.5, fz: "sm" },
@@ -690,7 +722,6 @@ const defaultComponents = {
       xl: { px: 6, py: 3, fz: "xl" },
     };
 
-    // Wireframe black and white variants
     const variantStyles: Record<string, StyleSystemProps> = {
       filled: {
         bg: palette.black,
@@ -714,18 +745,16 @@ const defaultComponents = {
       },
     };
 
-    const buttonStyles = {
+    const buttonStyles: StyleSystemProps = {
       ...sizeStyles[size],
       ...variantStyles[variant],
       bdr: "0px",
       cursor: disabled ? "not-allowed" : "default",
-      ...styleProps,
       style: {
         fontFamily,
         fontSize: fontSizes.md,
         textTransform: "uppercase" as const,
         letterSpacing: "0.05em",
-        ...styleProps.style,
       },
     };
 
@@ -749,11 +778,11 @@ const defaultComponents = {
           outlineOffset: "2px",
         },
       },
-      ...pseudoProps,
     };
 
-    const css = helpers.generateCSS(
-      className,
+    const { attrs, css } = helpers.generateAttrs(
+      "btn",
+      allProps,
       buttonStyles,
       defaultPseudoProps
     );
@@ -761,14 +790,7 @@ const defaultComponents = {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: css }} />
-        <button
-          {...commonProps}
-          {...otherProps}
-          class={className}
-          type={type}
-          disabled={disabled}
-          {...htmxAttrs}
-        >
+        <button {...attrs} type={type} disabled={disabled}>
           {children}
         </button>
       </>
